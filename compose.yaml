@@ -1,0 +1,23 @@
+services:
+  db-petcare:
+    image: postgres:17
+    container_name: db-petcare
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-petcare}
+      POSTGRES_USER: ${POSTGRES_USER:-petcare}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dev}
+    ports:
+      # Solo accesible desde la máquina local, no se expone a la red
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      # PostgreSQL 17 guarda los datos en /var/lib/postgresql/data (en la 18 cambia a /var/lib/postgresql)
+      - db-petcare-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db-petcare-data:
