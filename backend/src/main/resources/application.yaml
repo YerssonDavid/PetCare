@@ -1,0 +1,17 @@
+spring:
+  config:
+    import: optional:file:.env[.properties]
+
+  application:
+    name: petcare-backend
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/petcare
+    username: ${POSTGRES_USER:petcare}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
