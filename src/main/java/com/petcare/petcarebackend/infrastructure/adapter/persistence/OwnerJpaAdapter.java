@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -44,5 +45,10 @@ public class OwnerJpaAdapter implements OwnerRepositoryPort {
     @Override
     public boolean existsByEmail(String email) {
         return ownerRepository.existsByEmail(email);
+    }
+
+    @Override
+    public boolean existsById(UUID id) {
+        return ownerRepository.existsById(id);
     }
 }
