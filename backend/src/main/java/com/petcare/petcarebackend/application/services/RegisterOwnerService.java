@@ -39,7 +39,12 @@ public class RegisterOwnerService implements OwnerRegistry {
         // Create user
         Owner owner = Owner.register(request.name(), email, phone, hashedPassword);
 
-        // Validate if exist and save user
-        return ownerRepositoryPort.saveOwner(owner);
+        ownerRepositoryPort.saveOwner(owner);
+
+        return new ResponseHttp(
+                "El usuario se ha registrado correctamente",
+                true,
+                LocalDateTime.now()
+        );
     }
 }
