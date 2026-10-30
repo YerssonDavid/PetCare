@@ -1,13 +1,14 @@
 package com.petcare.petcarebackend.domain.entity;
 
 import com.petcare.petcarebackend.domain.enums.TypePet;
+import com.petcare.petcarebackend.domain.valueobject.PetName;
 
 import java.util.UUID;
 
 public class Pet {
     private UUID id;
     private UUID ownerId;
-    private String name;
+    private PetName name;
     private TypePet typePet;
     private int age;
     private String description;
@@ -15,7 +16,7 @@ public class Pet {
     public Pet() {
     }
 
-    public Pet(UUID id, UUID ownerId, String name, TypePet typePet, int age, String description) {
+    public Pet(UUID id, UUID ownerId, PetName name, TypePet typePet, int age, String description) {
         this.id = id;
         this.ownerId = ownerId;
         this.name = name;
@@ -25,7 +26,7 @@ public class Pet {
     }
 
     // Create factory
-    public static Pet register(UUID ownerId, String name, TypePet typePet, int age, String description){
+    public static Pet register(UUID ownerId, PetName name, TypePet typePet, int age, String description){
         return new Pet(UUID.randomUUID(), ownerId, name, typePet, age, description);
     }
 
@@ -45,11 +46,11 @@ public class Pet {
         this.ownerId = ownerId;
     }
 
-    public String getName() {
+    public PetName getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(PetName name) {
         this.name = name;
     }
 

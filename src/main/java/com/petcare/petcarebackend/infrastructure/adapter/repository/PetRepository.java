@@ -8,5 +8,5 @@ import java.util.UUID;
 
 @Repository
 public interface PetRepository extends JpaRepository<PetJpa, UUID> {
-    boolean existsByOwnerIdAndName(UUID ownerId, String name);
+    boolean existsByOwnerIdAndNameNormalized(UUID ownerId, String nameNormalized);
 }

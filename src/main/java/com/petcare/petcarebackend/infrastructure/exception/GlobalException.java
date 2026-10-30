@@ -1,5 +1,7 @@
 package com.petcare.petcarebackend.infrastructure.exception;
 
+import com.petcare.petcarebackend.application.exception.OwnerNotFoundException;
+import com.petcare.petcarebackend.application.exception.PetAlreadyExistsException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
@@ -43,6 +45,16 @@ public class GlobalException extends ResponseEntityExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ProblemDetail handleIllegalArgument(IllegalArgumentException ex) {
         return problem(HttpStatus.BAD_REQUEST, "Datos inválidos", ex.getMessage());
+    }
+
+    @ExceptionHandler(OwnerNotFoundException.class)
+    public ProblemDetail handleOwnerNotFound(OwnerNotFoundException ex) {
+        return problem(HttpStatus.NOT_FOUND, "Recurso no encontrado", ex.getMessage());
+    }
+
+    @ExceptionHandler(PetAlreadyExistsException.class)
+    public ProblemDetail handlePetAlreadyExists(PetAlreadyExistsException ex) {
+        return problem(HttpStatus.CONFLICT, "Conflicto", ex.getMessage());
     }
 
     // Unique constraint hit, e.g. two concurrent registrations with the same email

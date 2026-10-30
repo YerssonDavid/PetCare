@@ -2,6 +2,7 @@ package com.petcare.petcarebackend.infrastructure.adapter.in;
 
 import com.petcare.petcarebackend.application.dto.RegisterOwnerRequest;
 import com.petcare.petcarebackend.application.dto.RegisterPetRequest;
+import com.petcare.petcarebackend.application.dto.RegisterPetResponse;
 import com.petcare.petcarebackend.application.dto.ResponseHttp;
 import com.petcare.petcarebackend.application.port.in.OwnerRegistry;
 import com.petcare.petcarebackend.application.port.in.PetRegistry;
@@ -53,17 +54,18 @@ public class RegistryController {
             summary = "Registrar mascota",
             description = "Registra una mascota para un propietario existente. Temporalmente no requiere autenticación hasta implementar JWT."
     )
-    @ApiResponse(responseCode = "201", description = "Mascota registrada",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseHttp.class)))
+    @ApiResponse(responseCode = "201", description = "Mascota registrada; devuelve el id generado",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = RegisterPetResponse.class)))
     @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos",
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
-    @ApiResponse(responseCode = "409", description = "No se pudo completar el registro (p. ej. propietario inexistente o mascota ya registrada)",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseHttp.class)))
+    @ApiResponse(responseCode = "404", description = "Propietario inexistente",
+            content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
+    @ApiResponse(responseCode = "409", description = "El propietario ya tiene una mascota con ese nombre",
+            content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
     @ApiResponse(responseCode = "500", description = "Error interno",
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
-    public ResponseEntity<ResponseHttp> registryPet(@Valid @RequestBody RegisterPetRequest register) {
-        ResponseHttp response = petRegistry.registerPet(register);
-        HttpStatus status = response.success() ? HttpStatus.CREATED : HttpStatus.CONFLICT;
-        return ResponseEntity.status(status).body(response);
+    public ResponseEntity<RegisterPetResponse> registryPet(@Valid @RequestBody RegisterPetRequest register) {
+        RegisterPetResponse response = petRegistry.registerPet(register);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

@@ -1,11 +1,14 @@
 package com.petcare.petcarebackend.application.services;
 
 import com.petcare.petcarebackend.application.dto.RegisterPetRequest;
-import com.petcare.petcarebackend.application.dto.ResponseHttp;
+import com.petcare.petcarebackend.application.dto.RegisterPetResponse;
+import com.petcare.petcarebackend.application.exception.OwnerNotFoundException;
+import com.petcare.petcarebackend.application.exception.PetAlreadyExistsException;
 import com.petcare.petcarebackend.application.port.in.PetRegistry;
 import com.petcare.petcarebackend.application.port.out.OwnerRepositoryPort;
 import com.petcare.petcarebackend.application.port.out.PetRepositoryPort;
 import com.petcare.petcarebackend.domain.entity.Pet;
+import com.petcare.petcarebackend.domain.valueobject.PetName;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,24 +23,26 @@ public class RegisterPetService implements PetRegistry {
     private final OwnerRepositoryPort ownerRepository;
 
     @Override
-    public ResponseHttp registerPet(RegisterPetRequest request) {
+    public RegisterPetResponse registerPet(RegisterPetRequest request) {
         if(!ownerRepository.existsById(request.ownerId())){
-            return new ResponseHttp("Owner not found", false, LocalDateTime.now());
+            throw new OwnerNotFoundException(request.ownerId());
         }
 
-        if(petRepository.existsByOwnerIdAndName(request.ownerId(), request.name())){
-            return new ResponseHttp("Pet already exists", false, LocalDateTime.now());
+        PetName name = new PetName(request.name());
+
+        if(petRepository.existsByOwnerIdAndNormalizedName(request.ownerId(), name.normalized())){
+            throw new PetAlreadyExistsException(name.value());
         }
 
-        // Create pet
         Pet pet = Pet.register(
                 request.ownerId(),
-                request.name(),
+                name,
                 request.typePet(),
                 request.age(),
                 request.description()
         );
 
-        return petRepository.savePet(pet);
+        petRepository.savePet(pet);
+        return new RegisterPetResponse(pet.getId(), "Pet registered successfully", LocalDateTime.now());
     }
 }

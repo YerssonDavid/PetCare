@@ -1,6 +1,6 @@
 package com.petcare.petcarebackend.infrastructure.adapter.persistence;
 
-import com.petcare.petcarebackend.application.dto.ResponseHttp;
+import com.petcare.petcarebackend.application.exception.PetAlreadyExistsException;
 import com.petcare.petcarebackend.application.port.out.PetRepositoryPort;
 import com.petcare.petcarebackend.domain.entity.Pet;
 import com.petcare.petcarebackend.infrastructure.adapter.repository.OwnerRepository;
@@ -8,9 +8,10 @@ import com.petcare.petcarebackend.infrastructure.adapter.repository.PetRepositor
 import com.petcare.petcarebackend.infrastructure.entity.OwnerJpa;
 import com.petcare.petcarebackend.infrastructure.entity.PetJpa;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.exception.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Component
@@ -21,7 +22,7 @@ public class PetJpaAdapter implements PetRepositoryPort {
     private final OwnerRepository ownerRepository;
 
     @Override
-    public ResponseHttp savePet(Pet pet) {
+    public void savePet(Pet pet) {
 
         // Proxy without SELECT: the use case already verified the owner exists
         OwnerJpa owner = ownerRepository.getReferenceById(pet.getOwnerId());
@@ -29,19 +30,31 @@ public class PetJpaAdapter implements PetRepositoryPort {
         PetJpa petJpa = new PetJpa(
                 pet.getId(),
                 owner,
-                pet.getName(),
+                pet.getName().value(),
+                pet.getName().normalized(),
                 pet.getTypePet(),
                 pet.getAge(),
                 pet.getDescription()
         );
 
-        petRepository.save(petJpa);
-        return new ResponseHttp("Pet registered successfully", true, LocalDateTime.now());
+        try {
+            // Flush now so a concurrent duplicate surfaces here, even inside a wider transaction
+            petRepository.saveAndFlush(petJpa);
+        } catch (DataIntegrityViolationException ex) {
+            if (isOwnerNameViolation(ex)) {
+                throw new PetAlreadyExistsException(pet.getName().value());
+            }
+            throw ex;
+        }
     }
 
     @Override
-    public boolean existsByOwnerIdAndName(UUID ownerId, String name) {
-        return petRepository.existsByOwnerIdAndName(ownerId, name);
+    public boolean existsByOwnerIdAndNormalizedName(UUID ownerId, String normalizedName) {
+        return petRepository.existsByOwnerIdAndNameNormalized(ownerId, normalizedName);
     }
 
+    private boolean isOwnerNameViolation(DataIntegrityViolationException ex) {
+        return ex.getCause() instanceof ConstraintViolationException cve
+                && PetJpa.UK_OWNER_NAME.equalsIgnoreCase(cve.getConstraintName());
+    }
 }
