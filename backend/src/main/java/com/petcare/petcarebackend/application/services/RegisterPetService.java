@@ -1,10 +1,10 @@
 package com.petcare.petcarebackend.application.services;
 
 import com.petcare.petcarebackend.application.dto.RegisterPetRequest;
-import com.petcare.petcarebackend.application.dto.RegisterPetResponse;
+import com.petcare.petcarebackend.application.dto.RegisterResponse;
 import com.petcare.petcarebackend.application.exception.OwnerNotFoundException;
 import com.petcare.petcarebackend.application.exception.PetAlreadyExistsException;
-import com.petcare.petcarebackend.application.port.in.PetRegistry;
+import com.petcare.petcarebackend.application.port.in.registry.PetRegistry;
 import com.petcare.petcarebackend.application.port.out.OwnerRepositoryPort;
 import com.petcare.petcarebackend.application.port.out.PetRepositoryPort;
 import com.petcare.petcarebackend.domain.entity.Pet;
@@ -23,7 +23,7 @@ public class RegisterPetService implements PetRegistry {
     private final OwnerRepositoryPort ownerRepository;
 
     @Override
-    public RegisterPetResponse registerPet(RegisterPetRequest request) {
+    public RegisterResponse registerPet(RegisterPetRequest request) {
         if(!ownerRepository.existsById(request.ownerId())){
             throw new OwnerNotFoundException(request.ownerId());
         }
@@ -43,6 +43,6 @@ public class RegisterPetService implements PetRegistry {
         );
 
         petRepository.savePet(pet);
-        return new RegisterPetResponse(pet.getId(), "Pet registered successfully", LocalDateTime.now());
+        return new RegisterResponse(pet.getId(), "Pet registered successfully", LocalDateTime.now());
     }
 }
