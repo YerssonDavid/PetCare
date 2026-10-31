@@ -3,7 +3,8 @@ package com.petcare.petcarebackend.application.dto;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public record RegisterPetResponse(
+// Shared response for every registration use case (owner, provider, pet)
+public record RegisterResponse(
         UUID id,
         String message,
         LocalDateTime timestamp
