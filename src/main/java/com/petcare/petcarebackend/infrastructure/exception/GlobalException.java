@@ -1,5 +1,6 @@
 package com.petcare.petcarebackend.infrastructure.exception;
 
+import com.petcare.petcarebackend.application.exception.OwnerAlreadyExistsException;
 import com.petcare.petcarebackend.application.exception.OwnerNotFoundException;
 import com.petcare.petcarebackend.application.exception.PetAlreadyExistsException;
 import lombok.extern.slf4j.Slf4j;
@@ -50,6 +51,11 @@ public class GlobalException extends ResponseEntityExceptionHandler {
     @ExceptionHandler(OwnerNotFoundException.class)
     public ProblemDetail handleOwnerNotFound(OwnerNotFoundException ex) {
         return problem(HttpStatus.NOT_FOUND, "Recurso no encontrado", ex.getMessage());
+    }
+
+    @ExceptionHandler(OwnerAlreadyExistsException.class)
+    public ProblemDetail handleOwnerAlreadyExists(OwnerAlreadyExistsException ex) {
+        return problem(HttpStatus.CONFLICT, "Conflicto", ex.getMessage());
     }
 
     @ExceptionHandler(PetAlreadyExistsException.class)
