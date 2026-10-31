@@ -1,11 +1,9 @@
 package com.petcare.petcarebackend.infrastructure.adapter.in;
 
-import com.petcare.petcarebackend.application.dto.RegisterOwnerRequest;
-import com.petcare.petcarebackend.application.dto.RegisterPetRequest;
-import com.petcare.petcarebackend.application.dto.RegisterPetResponse;
-import com.petcare.petcarebackend.application.dto.ResponseHttp;
-import com.petcare.petcarebackend.application.port.in.OwnerRegistry;
-import com.petcare.petcarebackend.application.port.in.PetRegistry;
+import com.petcare.petcarebackend.application.dto.*;
+import com.petcare.petcarebackend.application.port.in.registry.OwnerRegistry;
+import com.petcare.petcarebackend.application.port.in.registry.PetRegistry;
+import com.petcare.petcarebackend.application.port.in.registry.ProviderRegistry;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -29,24 +27,24 @@ public class RegistryController {
 
     private final OwnerRegistry ownerRegistry;
     private final PetRegistry petRegistry;
+    private final ProviderRegistry providerRegistry;
 
     @PostMapping("/owner")
     @Operation(
             summary = "Registrar propietario",
             description = "Crea una cuenta de propietario de mascotas con rol USER. No requiere autenticación."
     )
-    @ApiResponse(responseCode = "201", description = "Propietario registrado",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseHttp.class)))
+    @ApiResponse(responseCode = "201", description = "Propietario registrado; devuelve el id generado",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = RegisterResponse.class)))
     @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos",
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
     @ApiResponse(responseCode = "409", description = "No se pudo completar el registro (p. ej. email ya registrado)",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseHttp.class)))
+            content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
     @ApiResponse(responseCode = "500", description = "Error interno",
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
-    public ResponseEntity<ResponseHttp> registryOwner(@Valid @RequestBody RegisterOwnerRequest register) {
-        ResponseHttp response = ownerRegistry.registerOwner(register);
-        HttpStatus status = response.success() ? HttpStatus.CREATED : HttpStatus.CONFLICT;
-        return ResponseEntity.status(status).body(response);
+    public ResponseEntity<RegisterResponse> registryOwner(@Valid @RequestBody RegisterOwnerRequest register) {
+        RegisterResponse response = ownerRegistry.registerOwner(register);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/pet")
@@ -55,7 +53,7 @@ public class RegistryController {
             description = "Registra una mascota para un propietario existente. Temporalmente no requiere autenticación hasta implementar JWT."
     )
     @ApiResponse(responseCode = "201", description = "Mascota registrada; devuelve el id generado",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = RegisterPetResponse.class)))
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = RegisterResponse.class)))
     @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos",
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
     @ApiResponse(responseCode = "404", description = "Propietario inexistente",
@@ -64,8 +62,26 @@ public class RegistryController {
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
     @ApiResponse(responseCode = "500", description = "Error interno",
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
-    public ResponseEntity<RegisterPetResponse> registryPet(@Valid @RequestBody RegisterPetRequest register) {
-        RegisterPetResponse response = petRegistry.registerPet(register);
+    public ResponseEntity<RegisterResponse> registryPet(@Valid @RequestBody RegisterPetRequest register) {
+        RegisterResponse response = petRegistry.registerPet(register);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("/provider")
+    @Operation(
+            summary = "Registrar proveedor",
+            description = "Crea una cuenta de proveedor de servicios con rol PROVIDER. No requiere autenticación."
+    )
+    @ApiResponse(responseCode = "201", description = "Proveedor registrado; devuelve el id generado",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = RegisterResponse.class)))
+    @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos",
+            content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
+    @ApiResponse(responseCode = "409", description = "Ya existe un proveedor con ese nombre comercial o email",
+            content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
+    @ApiResponse(responseCode = "500", description = "Error interno",
+            content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
+    public ResponseEntity<RegisterResponse> registryProvider(@Valid @RequestBody RegisterProviderRequest register) {
+        RegisterResponse response = providerRegistry.registerProvider(register);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

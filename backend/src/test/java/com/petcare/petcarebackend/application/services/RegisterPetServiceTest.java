@@ -1,7 +1,7 @@
 package com.petcare.petcarebackend.application.services;
 
 import com.petcare.petcarebackend.application.dto.RegisterPetRequest;
-import com.petcare.petcarebackend.application.dto.RegisterPetResponse;
+import com.petcare.petcarebackend.application.dto.RegisterResponse;
 import com.petcare.petcarebackend.application.exception.OwnerNotFoundException;
 import com.petcare.petcarebackend.application.exception.PetAlreadyExistsException;
 import com.petcare.petcarebackend.application.port.out.OwnerRepositoryPort;
@@ -47,7 +47,7 @@ class RegisterPetServiceTest {
         when(ownerRepository.existsById(OWNER_ID)).thenReturn(true);
         when(petRepository.existsByOwnerIdAndNormalizedName(OWNER_ID, "firulais")).thenReturn(false);
 
-        RegisterPetResponse response = service.registerPet(request(" Firulais "));
+        RegisterResponse response = service.registerPet(request(" Firulais "));
 
         ArgumentCaptor<Pet> saved = ArgumentCaptor.forClass(Pet.class);
         verify(petRepository).savePet(saved.capture());

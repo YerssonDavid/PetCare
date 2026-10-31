@@ -1,7 +1,9 @@
 package com.petcare.petcarebackend.infrastructure.exception;
 
+import com.petcare.petcarebackend.application.exception.OwnerAlreadyExistsException;
 import com.petcare.petcarebackend.application.exception.OwnerNotFoundException;
 import com.petcare.petcarebackend.application.exception.PetAlreadyExistsException;
+import com.petcare.petcarebackend.application.exception.ProviderAlreadyExistsException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
@@ -52,8 +54,18 @@ public class GlobalException extends ResponseEntityExceptionHandler {
         return problem(HttpStatus.NOT_FOUND, "Recurso no encontrado", ex.getMessage());
     }
 
+    @ExceptionHandler(OwnerAlreadyExistsException.class)
+    public ProblemDetail handleOwnerAlreadyExists(OwnerAlreadyExistsException ex) {
+        return problem(HttpStatus.CONFLICT, "Conflicto", ex.getMessage());
+    }
+
     @ExceptionHandler(PetAlreadyExistsException.class)
     public ProblemDetail handlePetAlreadyExists(PetAlreadyExistsException ex) {
+        return problem(HttpStatus.CONFLICT, "Conflicto", ex.getMessage());
+    }
+
+    @ExceptionHandler(ProviderAlreadyExistsException.class)
+    public ProblemDetail handleProviderAlreadyExists(ProviderAlreadyExistsException ex) {
         return problem(HttpStatus.CONFLICT, "Conflicto", ex.getMessage());
     }
 
