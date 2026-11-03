@@ -20,4 +20,15 @@ public final class ServiceRequestHistoryMapper {
                 history.getChangedAt()
         );
     }
+
+    public static ServiceRequestHistory toDomain(ServiceRequestHistoryJpa entity) {
+        return new ServiceRequestHistory(
+                entity.getId(),
+                entity.getRequest().getId(),
+                entity.getOwner().getId(),
+                entity.getStatus(),
+                entity.getReason(),
+                entity.getChangedAt()
+        );
+    }
 }

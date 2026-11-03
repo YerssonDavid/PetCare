@@ -5,6 +5,7 @@ import com.petcare.petcarebackend.domain.entity.ServiceRequest;
 import com.petcare.petcarebackend.domain.enums.RequestStatus;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
@@ -18,6 +19,10 @@ public interface ServiceRequestRepositoryPort {
     Optional<ServiceRequestDetails> findDetailsById(UUID id);
     // Most recent first; a null status returns the requests in every status
     List<ServiceRequestDetails> findDetailsByProvider(UUID providerId, RequestStatus status);
+    // Most recent first
+    List<ServiceRequestDetails> findDetailsByOwner(UUID ownerId);
+    // Accepted requests for services, not products, whose slot start time has been reached; the latest slot first
+    List<ServiceRequestDetails> findAcceptedServiceDetailsStartedBy(UUID providerId, LocalDateTime now);
     // Atomic: stores the request's status and reason, and returns false if it was already answered,
     // so only one concurrent answer can win
     boolean updateIfPending(ServiceRequest request);

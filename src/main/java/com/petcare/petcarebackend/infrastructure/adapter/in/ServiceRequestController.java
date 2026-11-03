@@ -4,8 +4,12 @@ import com.petcare.petcarebackend.application.dto.AcceptServiceRequestRequest;
 import com.petcare.petcarebackend.application.dto.CreateServiceRequestRequest;
 import com.petcare.petcarebackend.application.dto.ReceivedServiceRequestResponse;
 import com.petcare.petcarebackend.application.dto.RejectServiceRequestRequest;
+import com.petcare.petcarebackend.application.dto.ServiceRequestHistoryResponse;
 import com.petcare.petcarebackend.application.dto.ServiceRequestResponse;
+import com.petcare.petcarebackend.application.port.in.query.OwnerServiceRequestQuery;
+import com.petcare.petcarebackend.application.port.in.query.ProvidedServiceRequestQuery;
 import com.petcare.petcarebackend.application.port.in.query.ReceivedServiceRequestQuery;
+import com.petcare.petcarebackend.application.port.in.query.ServiceRequestHistoryQuery;
 import com.petcare.petcarebackend.application.port.in.registry.ServiceRequestAnswerRegistry;
 import com.petcare.petcarebackend.application.port.in.registry.ServiceRequestRegistry;
 import com.petcare.petcarebackend.domain.enums.RequestStatus;
@@ -41,6 +45,9 @@ public class ServiceRequestController {
     private final ServiceRequestRegistry serviceRequestRegistry;
     private final ServiceRequestAnswerRegistry serviceRequestAnswerRegistry;
     private final ReceivedServiceRequestQuery receivedServiceRequestQuery;
+    private final ProvidedServiceRequestQuery providedServiceRequestQuery;
+    private final OwnerServiceRequestQuery ownerServiceRequestQuery;
+    private final ServiceRequestHistoryQuery serviceRequestHistoryQuery;
 
     @PostMapping
     @Operation(
@@ -86,6 +93,71 @@ public class ServiceRequestController {
     public List<ReceivedServiceRequestResponse> listReceivedServiceRequests(@RequestParam UUID providerId,
                                                                             @RequestParam(required = false) RequestStatus status) {
         return receivedServiceRequestQuery.listReceivedServiceRequests(providerId, status);
+    }
+
+    @GetMapping("/provided")
+    @Operation(
+            summary = "Listar servicios prestados",
+            description = "Devuelve el historial de un proveedor: solicitudes de servicios, no de productos, en estado ACEPTADO cuya hora de inicio ya llegó, de la franja más reciente a la más antigua, "
+                    + "con la descripción del servicio, los datos de la mascota y el correo del cliente. "
+                    + "Temporalmente no requiere autenticación hasta implementar JWT."
+    )
+    @ApiResponse(responseCode = "200", description = "Servicios prestados; lista vacía si no hay ninguno",
+            content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ReceivedServiceRequestResponse.class))))
+    @ApiResponse(responseCode = "400", description = "Falta providerId o no es válido",
+            content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
+    @ApiResponse(responseCode = "403", description = "La cuenta no tiene el rol PROVIDER",
+            content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
+    @ApiResponse(responseCode = "404", description = "Proveedor inexistente",
+            content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
+    @ApiResponse(responseCode = "500", description = "Error interno",
+            content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
+    // TODO: remove providerId once JWT exists; the provider ID must come from the token
+    public List<ReceivedServiceRequestResponse> listProvidedServiceRequests(@RequestParam UUID providerId) {
+        return providedServiceRequestQuery.listProvidedServiceRequests(providerId);
+    }
+
+    @GetMapping("/mine")
+    @Operation(
+            summary = "Mis citas",
+            description = "Devuelve las solicitudes de un propietario con su estado actual, de la más reciente a la más antigua. "
+                    + "Temporalmente no requiere autenticación hasta implementar JWT."
+    )
+    @ApiResponse(responseCode = "200", description = "Solicitudes del propietario; lista vacía si no tiene ninguna",
+            content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ServiceRequestResponse.class))))
+    @ApiResponse(responseCode = "400", description = "Falta ownerId o no es válido",
+            content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
+    @ApiResponse(responseCode = "403", description = "La cuenta no tiene el rol USER",
+            content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
+    @ApiResponse(responseCode = "404", description = "Propietario inexistente",
+            content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
+    @ApiResponse(responseCode = "500", description = "Error interno",
+            content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
+    // TODO: remove ownerId once JWT exists; the owner ID must come from the token
+    public List<ServiceRequestResponse> listOwnerServiceRequests(@RequestParam UUID ownerId) {
+        return ownerServiceRequestQuery.listOwnerServiceRequests(ownerId);
+    }
+
+    @GetMapping("/{id}/history")
+    @Operation(
+            summary = "Historial de una solicitud",
+            description = "Devuelve la descripción del servicio, los datos de la mascota y los cambios de estado de la solicitud, del más reciente al más antiguo, incluido el motivo de rechazo. "
+                    + "Solo pueden consultarlo su propietario y su proveedor. "
+                    + "Temporalmente no requiere autenticación hasta implementar JWT."
+    )
+    @ApiResponse(responseCode = "200", description = "Historial de la solicitud",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ServiceRequestHistoryResponse.class)))
+    @ApiResponse(responseCode = "400", description = "Falta accountId o no es válido",
+            content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
+    @ApiResponse(responseCode = "403", description = "La cuenta no es el propietario ni el proveedor de la solicitud",
+            content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
+    @ApiResponse(responseCode = "404", description = "Solicitud inexistente",
+            content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
+    @ApiResponse(responseCode = "500", description = "Error interno",
+            content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
+    // TODO: remove accountId once JWT exists; the account ID must come from the token
+    public ServiceRequestHistoryResponse getServiceRequestHistory(@PathVariable UUID id, @RequestParam UUID accountId) {
+        return serviceRequestHistoryQuery.getServiceRequestHistory(id, accountId);
     }
 
     @PatchMapping("/{id}/accept")

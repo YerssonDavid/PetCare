@@ -2,6 +2,7 @@ package com.petcare.petcarebackend.infrastructure.exception;
 
 import com.petcare.petcarebackend.application.exception.DuplicateServiceRequestException;
 import com.petcare.petcarebackend.application.exception.NotOfferingOwnerException;
+import com.petcare.petcarebackend.application.exception.NotRequestParticipantException;
 import com.petcare.petcarebackend.application.exception.NotRequestProviderException;
 import com.petcare.petcarebackend.application.exception.OfferingAlreadyExistsException;
 import com.petcare.petcarebackend.application.exception.OfferingNotFoundException;
@@ -125,6 +126,11 @@ public class GlobalException extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(NotRequestProviderException.class)
     public ProblemDetail handleNotRequestProvider(NotRequestProviderException ex) {
+        return problem(HttpStatus.FORBIDDEN, "Acceso denegado", ex.getMessage());
+    }
+
+    @ExceptionHandler(NotRequestParticipantException.class)
+    public ProblemDetail handleNotRequestParticipant(NotRequestParticipantException ex) {
         return problem(HttpStatus.FORBIDDEN, "Acceso denegado", ex.getMessage());
     }
 

@@ -38,7 +38,11 @@ public class SecurityConfig {
                         // TODO: replace with hasRole("USER") once JWT exists; ownerId currently comes from the request body
                         .requestMatchers(HttpMethod.POST, "/service-requests").permitAll()
                         // TODO: replace with hasRole("PROVIDER") once JWT exists; providerId currently comes from a request parameter
-                        .requestMatchers(HttpMethod.GET, "/service-requests/received").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/service-requests/received", "/service-requests/provided").permitAll()
+                        // TODO: replace with hasRole("USER") once JWT exists; ownerId currently comes from a request parameter
+                        .requestMatchers(HttpMethod.GET, "/service-requests/mine").permitAll()
+                        // TODO: require authentication once JWT exists; accountId currently comes from a request parameter
+                        .requestMatchers(HttpMethod.GET, "/service-requests/*/history").permitAll()
                         // TODO: replace with hasRole("PROVIDER") once JWT exists; providerId currently comes from the request body
                         .requestMatchers(HttpMethod.PATCH, "/service-requests/*/accept", "/service-requests/*/reject").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()

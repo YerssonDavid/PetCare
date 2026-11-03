@@ -105,6 +105,15 @@ class ServiceRequestTest {
     }
 
     @Test
+    void involvesOnlyItsOwnerAndItsProvider() {
+        ServiceRequest request = pendingRequest();
+
+        assertThat(request.involves(OWNER_ID)).isTrue();
+        assertThat(request.involves(PROVIDER_ID)).isTrue();
+        assertThat(request.involves(UUID.randomUUID())).isFalse();
+    }
+
+    @Test
     void acceptsPendingRequest() {
         ServiceRequest request = pendingRequest();
 

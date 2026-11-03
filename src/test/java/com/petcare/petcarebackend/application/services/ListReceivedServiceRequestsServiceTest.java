@@ -105,6 +105,7 @@ class ListReceivedServiceRequestsServiceTest {
         assertThat(response.pet().age()).isEqualTo(3);
         assertThat(response.pet().description()).isEqualTo("Juguetón");
         assertThat(response.offeringName()).isEqualTo("Baño completo");
+        assertThat(response.offeringDescription()).isEqualTo("d");
         assertThat(response.date()).isEqualTo(LocalDate.of(2026, 11, 11));
         assertThat(response.price()).isEqualByComparingTo("45000");
         assertThat(response.status()).isEqualTo(RequestStatus.PENDIENTE);

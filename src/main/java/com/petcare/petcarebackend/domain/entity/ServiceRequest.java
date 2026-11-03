@@ -68,6 +68,10 @@ public class ServiceRequest {
         this.rejectionReason = reason.trim();
     }
 
+    public boolean involves(UUID accountId) {
+        return ownerId.equals(accountId) || providerId.equals(accountId);
+    }
+
     private void ensurePending() {
         if (status != RequestStatus.PENDIENTE) {
             throw new RequestNotPendingException();

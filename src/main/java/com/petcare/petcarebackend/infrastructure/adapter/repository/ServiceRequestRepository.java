@@ -44,6 +44,24 @@ public interface ServiceRequestRepository extends JpaRepository<ServiceRequestJp
     @EntityGraph(attributePaths = {"owner", "pet", "offering", "provider", "slot"})
     List<ServiceRequestJpa> findByProviderIdAndStatusInOrderByRequestedAtDesc(UUID providerId, Collection<RequestStatus> statuses);
 
+    @EntityGraph(attributePaths = {"owner", "pet", "offering", "provider", "slot"})
+    List<ServiceRequestJpa> findByOwnerIdOrderByRequestedAtDesc(UUID ownerId);
+
+    @EntityGraph(attributePaths = {"owner", "pet", "offering", "provider", "slot"})
+    @Query("""
+            select r from ServiceRequestJpa r
+            where r.provider.id = :providerId
+              and r.status = :status
+              and r.offering.type = :type
+              and (r.slot.slotDate < :date or (r.slot.slotDate = :date and r.slot.startTime <= :time))
+            order by r.slot.slotDate desc, r.slot.startTime desc
+            """)
+    List<ServiceRequestJpa> findByProviderStatusAndTypeStartedBy(@Param("providerId") UUID providerId,
+                                                                 @Param("status") RequestStatus status,
+                                                                 @Param("type") OfferingType type,
+                                                                 @Param("date") LocalDate date,
+                                                                 @Param("time") LocalTime time);
+
     // Conditional update: the database decides the winner when several answers target one request
     @Modifying(clearAutomatically = true)
     @Query("""

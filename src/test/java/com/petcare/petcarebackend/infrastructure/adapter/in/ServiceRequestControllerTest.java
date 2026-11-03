@@ -2,15 +2,20 @@ package com.petcare.petcarebackend.infrastructure.adapter.in;
 
 import com.petcare.petcarebackend.application.dto.PetResponse;
 import com.petcare.petcarebackend.application.dto.ReceivedServiceRequestResponse;
+import com.petcare.petcarebackend.application.dto.ServiceRequestHistoryResponse;
 import com.petcare.petcarebackend.application.dto.ServiceRequestResponse;
 import com.petcare.petcarebackend.application.exception.DuplicateServiceRequestException;
+import com.petcare.petcarebackend.application.exception.NotRequestParticipantException;
 import com.petcare.petcarebackend.application.exception.NotRequestProviderException;
 import com.petcare.petcarebackend.application.exception.PetNotFoundException;
 import com.petcare.petcarebackend.application.exception.PetNotOwnedException;
 import com.petcare.petcarebackend.application.exception.ServiceRequestNotFoundException;
 import com.petcare.petcarebackend.application.exception.TimeSlotNotFoundException;
 import com.petcare.petcarebackend.application.exception.TimeSlotUnavailableException;
+import com.petcare.petcarebackend.application.port.in.query.OwnerServiceRequestQuery;
+import com.petcare.petcarebackend.application.port.in.query.ProvidedServiceRequestQuery;
 import com.petcare.petcarebackend.application.port.in.query.ReceivedServiceRequestQuery;
+import com.petcare.petcarebackend.application.port.in.query.ServiceRequestHistoryQuery;
 import com.petcare.petcarebackend.application.port.in.registry.ServiceRequestAnswerRegistry;
 import com.petcare.petcarebackend.application.port.in.registry.ServiceRequestRegistry;
 import com.petcare.petcarebackend.domain.enums.OfferingType;
@@ -61,12 +66,22 @@ class ServiceRequestControllerTest {
     @Mock
     private ReceivedServiceRequestQuery receivedServiceRequestQuery;
 
+    @Mock
+    private ProvidedServiceRequestQuery providedServiceRequestQuery;
+
+    @Mock
+    private OwnerServiceRequestQuery ownerServiceRequestQuery;
+
+    @Mock
+    private ServiceRequestHistoryQuery serviceRequestHistoryQuery;
+
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(new ServiceRequestController(
-                        serviceRequestRegistry, serviceRequestAnswerRegistry, receivedServiceRequestQuery))
+                        serviceRequestRegistry, serviceRequestAnswerRegistry, receivedServiceRequestQuery,
+                        providedServiceRequestQuery, ownerServiceRequestQuery, serviceRequestHistoryQuery))
                 .setControllerAdvice(new GlobalException())
                 .build();
     }
@@ -254,7 +269,7 @@ class ServiceRequestControllerTest {
         when(receivedServiceRequestQuery.listReceivedServiceRequests(PROVIDER_ID, RequestStatus.PENDIENTE))
                 .thenReturn(List.of(new ReceivedServiceRequestResponse(
                         ID, new PetResponse(UUID.randomUUID(), "Firulais", TypePet.PERRO, 3, "Juguetón"), "ana@mail.com",
-                        "Baño completo", OfferingType.SERVICIO, LocalDate.of(2026, 11, 11), LocalTime.of(10, 0), LocalTime.of(11, 0),
+                        "Baño completo", "Baño y secado", OfferingType.SERVICIO, LocalDate.of(2026, 11, 11), LocalTime.of(10, 0), LocalTime.of(11, 0),
                         new BigDecimal("45000.00"), RequestStatus.PENDIENTE, null, null, LocalDateTime.of(2026, 11, 10, 8, 0))));
 
         mockMvc.perform(get("/service-requests/received")
@@ -262,6 +277,7 @@ class ServiceRequestControllerTest {
                         .param("status", "PENDIENTE"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(ID.toString()))
+                .andExpect(jsonPath("$[0].offeringDescription").value("Baño y secado"))
                 .andExpect(jsonPath("$[0].pet.name").value("Firulais"))
                 .andExpect(jsonPath("$[0].pet.typePet").value("PERRO"))
                 .andExpect(jsonPath("$[0].ownerEmail").value("ana@mail.com"))
@@ -289,5 +305,86 @@ class ServiceRequestControllerTest {
     @Test
     void receivedRequiresProviderId() throws Exception {
         mockMvc.perform(get("/service-requests/received")).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void listsProvidedServicesWithDescriptionAndPet() throws Exception {
+        when(providedServiceRequestQuery.listProvidedServiceRequests(PROVIDER_ID))
+                .thenReturn(List.of(new ReceivedServiceRequestResponse(
+                        ID, new PetResponse(UUID.randomUUID(), "Firulais", TypePet.PERRO, 3, "Juguetón"), "ana@mail.com",
+                        "Baño completo", "Baño y secado", OfferingType.SERVICIO, LocalDate.of(2026, 11, 9), LocalTime.of(10, 0), LocalTime.of(11, 0),
+                        new BigDecimal("45000.00"), RequestStatus.ACEPTADO, null, null, LocalDateTime.of(2026, 11, 8, 8, 0))));
+
+        mockMvc.perform(get("/service-requests/provided").param("providerId", PROVIDER_ID.toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].offeringDescription").value("Baño y secado"))
+                .andExpect(jsonPath("$[0].pet.name").value("Firulais"))
+                .andExpect(jsonPath("$[0].status").value("ACEPTADO"));
+    }
+
+    @Test
+    void providedRequiresProviderId() throws Exception {
+        mockMvc.perform(get("/service-requests/provided")).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void listsTheRequestsOfTheOwner() throws Exception {
+        UUID ownerId = UUID.randomUUID();
+        when(ownerServiceRequestQuery.listOwnerServiceRequests(ownerId))
+                .thenReturn(List.of(answered(RequestStatus.RECHAZADO, "Sin disponibilidad")));
+
+        mockMvc.perform(get("/service-requests/mine").param("ownerId", ownerId.toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(ID.toString()))
+                .andExpect(jsonPath("$[0].status").value("RECHAZADO"))
+                .andExpect(jsonPath("$[0].requestedAt").exists());
+    }
+
+    @Test
+    void mineRequiresOwnerId() throws Exception {
+        mockMvc.perform(get("/service-requests/mine")).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void returnsTheHistoryWithDescriptionPetAndEntries() throws Exception {
+        UUID accountId = UUID.randomUUID();
+        when(serviceRequestHistoryQuery.getServiceRequestHistory(ID, accountId))
+                .thenReturn(new ServiceRequestHistoryResponse(
+                        ID, "Baño completo", "Baño y secado", OfferingType.SERVICIO,
+                        new PetResponse(UUID.randomUUID(), "Firulais", TypePet.PERRO, 3, "Juguetón"),
+                        List.of(new ServiceRequestHistoryResponse.Entry(
+                                RequestStatus.RECHAZADO, "Sin disponibilidad", LocalDateTime.of(2026, 11, 10, 8, 0)))));
+
+        mockMvc.perform(get("/service-requests/{id}/history", ID).param("accountId", accountId.toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.offeringDescription").value("Baño y secado"))
+                .andExpect(jsonPath("$.pet.name").value("Firulais"))
+                .andExpect(jsonPath("$.entries[0].status").value("RECHAZADO"))
+                .andExpect(jsonPath("$.entries[0].reason").value("Sin disponibilidad"));
+    }
+
+    @Test
+    void historyRequiresAccountId() throws Exception {
+        mockMvc.perform(get("/service-requests/{id}/history", ID)).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void historyReturnsForbiddenForOtherAccounts() throws Exception {
+        UUID accountId = UUID.randomUUID();
+        when(serviceRequestHistoryQuery.getServiceRequestHistory(ID, accountId))
+                .thenThrow(new NotRequestParticipantException());
+
+        mockMvc.perform(get("/service-requests/{id}/history", ID).param("accountId", accountId.toString()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void historyReturnsNotFoundForUnknownRequest() throws Exception {
+        UUID accountId = UUID.randomUUID();
+        when(serviceRequestHistoryQuery.getServiceRequestHistory(ID, accountId))
+                .thenThrow(new ServiceRequestNotFoundException(ID));
+
+        mockMvc.perform(get("/service-requests/{id}/history", ID).param("accountId", accountId.toString()))
+                .andExpect(status().isNotFound());
     }
 }

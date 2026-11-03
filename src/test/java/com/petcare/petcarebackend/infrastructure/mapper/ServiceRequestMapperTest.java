@@ -81,6 +81,25 @@ class ServiceRequestMapperTest {
     }
 
     @Test
+    void historyToDomainCopiesEveryField() {
+        ServiceRequestJpa request = new ServiceRequestJpa();
+        request.setId(UUID.randomUUID());
+        OwnerJpa owner = new OwnerJpa();
+        owner.setId(UUID.randomUUID());
+        ServiceRequestHistoryJpa entity = new ServiceRequestHistoryJpa(UUID.randomUUID(), request, owner,
+                RequestStatus.RECHAZADO, "reason", AT);
+
+        ServiceRequestHistory history = ServiceRequestHistoryMapper.toDomain(entity);
+
+        assertThat(history.getId()).isEqualTo(entity.getId());
+        assertThat(history.getRequestId()).isEqualTo(request.getId());
+        assertThat(history.getOwnerId()).isEqualTo(owner.getId());
+        assertThat(history.getStatus()).isEqualTo(RequestStatus.RECHAZADO);
+        assertThat(history.getReason()).isEqualTo("reason");
+        assertThat(history.getChangedAt()).isEqualTo(AT);
+    }
+
+    @Test
     void historyToJpaCopiesEveryField() {
         ServiceRequestHistory history = new ServiceRequestHistory(UUID.randomUUID(), UUID.randomUUID(),
                 UUID.randomUUID(), RequestStatus.RECHAZADO, "reason", AT);

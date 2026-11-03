@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
@@ -73,6 +74,21 @@ public class ServiceRequestJpaAdapter implements ServiceRequestRepositoryPort {
     public List<ServiceRequestDetails> findDetailsByProvider(UUID providerId, RequestStatus status) {
         List<RequestStatus> statuses = status == null ? List.of(RequestStatus.values()) : List.of(status);
         return serviceRequestRepository.findByProviderIdAndStatusInOrderByRequestedAtDesc(providerId, statuses).stream()
+                .map(this::toDetails)
+                .toList();
+    }
+
+    @Override
+    public List<ServiceRequestDetails> findDetailsByOwner(UUID ownerId) {
+        return serviceRequestRepository.findByOwnerIdOrderByRequestedAtDesc(ownerId).stream()
+                .map(this::toDetails)
+                .toList();
+    }
+
+    @Override
+    public List<ServiceRequestDetails> findAcceptedServiceDetailsStartedBy(UUID providerId, LocalDateTime now) {
+        return serviceRequestRepository.findByProviderStatusAndTypeStartedBy(
+                        providerId, RequestStatus.ACEPTADO, OfferingType.SERVICIO, now.toLocalDate(), now.toLocalTime()).stream()
                 .map(this::toDetails)
                 .toList();
     }

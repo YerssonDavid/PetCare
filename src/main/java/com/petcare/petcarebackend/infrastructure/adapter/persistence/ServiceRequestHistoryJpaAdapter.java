@@ -9,6 +9,9 @@ import com.petcare.petcarebackend.infrastructure.mapper.ServiceRequestHistoryMap
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.UUID;
+
 @Component
 @RequiredArgsConstructor
 public class ServiceRequestHistoryJpaAdapter implements ServiceRequestHistoryRepositoryPort {
@@ -25,5 +28,12 @@ public class ServiceRequestHistoryJpaAdapter implements ServiceRequestHistoryRep
                 serviceRequestRepository.getReferenceById(history.getRequestId()),
                 ownerRepository.getReferenceById(history.getOwnerId())
         ));
+    }
+
+    @Override
+    public List<ServiceRequestHistory> findByRequestId(UUID requestId) {
+        return historyRepository.findByRequestIdOrderByChangedAtDesc(requestId).stream()
+                .map(ServiceRequestHistoryMapper::toDomain)
+                .toList();
     }
 }
