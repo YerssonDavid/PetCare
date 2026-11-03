@@ -13,6 +13,7 @@ import com.petcare.petcarebackend.application.port.out.timeslot.TimeSlotReposito
 import com.petcare.petcarebackend.domain.entity.Offering;
 import com.petcare.petcarebackend.domain.entity.Provider;
 import com.petcare.petcarebackend.domain.entity.TimeSlot;
+import com.petcare.petcarebackend.domain.enums.OfferingType;
 import com.petcare.petcarebackend.domain.enums.Role;
 import com.petcare.petcarebackend.domain.enums.SlotStatus;
 import org.junit.jupiter.api.BeforeEach;
@@ -72,9 +73,14 @@ class CreateTimeSlotServiceTest {
     }
 
     private Offering offeringOwnedBy(UUID providerId) {
+        return offeringOfType(providerId, OfferingType.SERVICIO);
+    }
+
+    private Offering offeringOfType(UUID providerId, OfferingType type) {
         Offering offering = new Offering();
         offering.setId(OFFERING_ID);
         offering.setProviderId(providerId);
+        offering.setType(type);
         return offering;
     }
 
@@ -93,7 +99,7 @@ class CreateTimeSlotServiceTest {
     @Test
     void savesFreeSlotAndReturnsItsId() {
         givenOwnerProvider();
-        when(timeSlotRepository.existsOverlappingForProvider(PROVIDER_ID, TOMORROW, TEN, ELEVEN)).thenReturn(false);
+        when(timeSlotRepository.existsOverlappingServiceSlot(PROVIDER_ID, TOMORROW, TEN, ELEVEN)).thenReturn(false);
 
         RegisterResponse response = service.createTimeSlot(OFFERING_ID, request(TOMORROW));
 
@@ -111,24 +117,36 @@ class CreateTimeSlotServiceTest {
     @Test
     void locksProviderBeforeCheckingOverlaps() {
         givenOwnerProvider();
-        when(timeSlotRepository.existsOverlappingForProvider(PROVIDER_ID, TOMORROW, TEN, ELEVEN)).thenReturn(false);
+        when(timeSlotRepository.existsOverlappingServiceSlot(PROVIDER_ID, TOMORROW, TEN, ELEVEN)).thenReturn(false);
 
         service.createTimeSlot(OFFERING_ID, request(TOMORROW));
 
         InOrder order = inOrder(providerRepository, timeSlotRepository);
         order.verify(providerRepository).findByIdForUpdate(PROVIDER_ID);
-        order.verify(timeSlotRepository).existsOverlappingForProvider(PROVIDER_ID, TOMORROW, TEN, ELEVEN);
+        order.verify(timeSlotRepository).existsOverlappingServiceSlot(PROVIDER_ID, TOMORROW, TEN, ELEVEN);
         order.verify(timeSlotRepository).saveTimeSlot(any());
     }
 
     @Test
     void rejectsOverlappingSlot() {
         givenOwnerProvider();
-        when(timeSlotRepository.existsOverlappingForProvider(PROVIDER_ID, TOMORROW, TEN, ELEVEN)).thenReturn(true);
+        when(timeSlotRepository.existsOverlappingServiceSlot(PROVIDER_ID, TOMORROW, TEN, ELEVEN)).thenReturn(true);
 
         assertThatThrownBy(() -> service.createTimeSlot(OFFERING_ID, request(TOMORROW)))
                 .isInstanceOf(TimeSlotOverlapException.class);
         verify(timeSlotRepository, never()).saveTimeSlot(any());
+    }
+
+    @Test
+    void savesProductSlotWithoutCheckingOverlaps() {
+        when(offeringRepository.findById(OFFERING_ID))
+                .thenReturn(Optional.of(offeringOfType(PROVIDER_ID, OfferingType.PRODUCTO)));
+        when(providerRepository.findByIdForUpdate(PROVIDER_ID)).thenReturn(Optional.of(providerWithRole(Role.PROVIDER)));
+
+        service.createTimeSlot(OFFERING_ID, request(TOMORROW));
+
+        verify(timeSlotRepository, never()).existsOverlappingServiceSlot(any(), any(), any(), any());
+        verify(timeSlotRepository).saveTimeSlot(any());
     }
 
     @Test

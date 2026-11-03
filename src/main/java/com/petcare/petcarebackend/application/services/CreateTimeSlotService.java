@@ -14,6 +14,7 @@ import com.petcare.petcarebackend.application.port.out.timeslot.TimeSlotReposito
 import com.petcare.petcarebackend.domain.entity.Offering;
 import com.petcare.petcarebackend.domain.entity.Provider;
 import com.petcare.petcarebackend.domain.entity.TimeSlot;
+import com.petcare.petcarebackend.domain.enums.OfferingType;
 import com.petcare.petcarebackend.domain.enums.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -56,7 +57,9 @@ public class CreateTimeSlotService implements TimeSlotRegistry {
                 LocalDateTime.now(clock)
         );
 
-        if (timeSlotRepository.existsOverlappingForProvider(provider.getId(), slot.getDate(), slot.getStartTime(), slot.getEndTime())) {
+        // Product pickup or delivery times do not occupy the provider; only service appointments can overlap
+        if (offering.getType() == OfferingType.SERVICIO
+                && timeSlotRepository.existsOverlappingServiceSlot(provider.getId(), slot.getDate(), slot.getStartTime(), slot.getEndTime())) {
             throw new TimeSlotOverlapException();
         }
 

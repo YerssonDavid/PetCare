@@ -39,7 +39,8 @@ public class TimeSlotController {
     @Operation(
             summary = "Crear franja horaria",
             description = "Crea una franja para un servicio o producto del proveedor: la cita de un servicio, o la hora de retiro o entrega de un producto. "
-                    + "Debe terminar a más tardar a las 17:00, empezar en el futuro (hora de Bogotá) y no cruzarse con otra franja del proveedor. "
+                    + "Debe terminar a más tardar a las 17:00 y empezar en el futuro (hora de Bogotá). "
+                    + "Las franjas de servicios no pueden cruzarse entre sí; las de productos no se validan. "
                     + "Temporalmente no requiere autenticación hasta implementar JWT."
     )
     @ApiResponse(responseCode = "201", description = "Franja creada; devuelve el id generado",
@@ -50,7 +51,7 @@ public class TimeSlotController {
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
     @ApiResponse(responseCode = "404", description = "Servicio o proveedor inexistente",
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
-    @ApiResponse(responseCode = "409", description = "La franja se cruza con otra del proveedor",
+    @ApiResponse(responseCode = "409", description = "La franja del servicio se cruza con otra franja de servicio del proveedor",
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
     @ApiResponse(responseCode = "500", description = "Error interno",
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))

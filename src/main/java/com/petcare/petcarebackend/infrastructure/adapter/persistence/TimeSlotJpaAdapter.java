@@ -2,6 +2,7 @@ package com.petcare.petcarebackend.infrastructure.adapter.persistence;
 
 import com.petcare.petcarebackend.application.port.out.timeslot.TimeSlotRepositoryPort;
 import com.petcare.petcarebackend.domain.entity.TimeSlot;
+import com.petcare.petcarebackend.domain.enums.OfferingType;
 import com.petcare.petcarebackend.domain.enums.SlotStatus;
 import com.petcare.petcarebackend.infrastructure.adapter.repository.OfferingRepository;
 import com.petcare.petcarebackend.infrastructure.adapter.repository.TimeSlotRepository;
@@ -31,8 +32,8 @@ public class TimeSlotJpaAdapter implements TimeSlotRepositoryPort {
     }
 
     @Override
-    public boolean existsOverlappingForProvider(UUID providerId, LocalDate date, LocalTime startTime, LocalTime endTime) {
-        return timeSlotRepository.existsOverlappingForProvider(providerId, date, startTime, endTime);
+    public boolean existsOverlappingServiceSlot(UUID providerId, LocalDate date, LocalTime startTime, LocalTime endTime) {
+        return timeSlotRepository.existsOverlappingForProviderAndType(providerId, OfferingType.SERVICIO, date, startTime, endTime);
     }
 
     @Override

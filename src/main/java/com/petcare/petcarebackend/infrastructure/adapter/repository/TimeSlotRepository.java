@@ -1,5 +1,6 @@
 package com.petcare.petcarebackend.infrastructure.adapter.repository;
 
+import com.petcare.petcarebackend.domain.enums.OfferingType;
 import com.petcare.petcarebackend.domain.enums.SlotStatus;
 import com.petcare.petcarebackend.infrastructure.entity.TimeSlotJpa;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,14 +20,16 @@ public interface TimeSlotRepository extends JpaRepository<TimeSlotJpa, UUID> {
     @Query("""
             select count(s) > 0 from TimeSlotJpa s
             where s.offering.provider.id = :providerId
+              and s.offering.type = :type
               and s.slotDate = :date
               and s.startTime < :endTime
               and s.endTime > :startTime
             """)
-    boolean existsOverlappingForProvider(@Param("providerId") UUID providerId,
-                                         @Param("date") LocalDate date,
-                                         @Param("startTime") LocalTime startTime,
-                                         @Param("endTime") LocalTime endTime);
+    boolean existsOverlappingForProviderAndType(@Param("providerId") UUID providerId,
+                                                @Param("type") OfferingType type,
+                                                @Param("date") LocalDate date,
+                                                @Param("startTime") LocalTime startTime,
+                                                @Param("endTime") LocalTime endTime);
 
     @Query("""
             select s from TimeSlotJpa s

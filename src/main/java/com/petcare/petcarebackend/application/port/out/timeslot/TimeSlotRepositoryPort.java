@@ -10,6 +10,6 @@ import java.util.UUID;
 
 public interface TimeSlotRepositoryPort {
     void saveTimeSlot(TimeSlot slot);
-    boolean existsOverlappingForProvider(UUID providerId, LocalDate date, LocalTime startTime, LocalTime endTime);
+    boolean existsOverlappingServiceSlot(UUID providerId, LocalDate date, LocalTime startTime, LocalTime endTime);
     List<TimeSlot> findFreeByOfferingStartingAfter(UUID offeringId, LocalDateTime dateTime);
 }
