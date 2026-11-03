@@ -43,6 +43,11 @@ public class TimeSlotJpaAdapter implements TimeSlotRepositoryPort {
     }
 
     @Override
+    public void release(UUID id) {
+        timeSlotRepository.updateStatusIfCurrent(id, SlotStatus.OCUPADA, SlotStatus.LIBRE);
+    }
+
+    @Override
     public boolean existsOverlappingServiceSlot(UUID providerId, LocalDate date, LocalTime startTime, LocalTime endTime) {
         return timeSlotRepository.existsOverlappingForProviderAndType(providerId, OfferingType.SERVICIO, date, startTime, endTime);
     }

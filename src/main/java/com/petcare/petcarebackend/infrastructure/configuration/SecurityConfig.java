@@ -37,6 +37,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/services/*/slots/free").permitAll()
                         // TODO: replace with hasRole("USER") once JWT exists; ownerId currently comes from the request body
                         .requestMatchers(HttpMethod.POST, "/service-requests").permitAll()
+                        // TODO: replace with hasRole("PROVIDER") once JWT exists; providerId currently comes from a request parameter
+                        .requestMatchers(HttpMethod.GET, "/service-requests/received").permitAll()
+                        // TODO: replace with hasRole("PROVIDER") once JWT exists; providerId currently comes from the request body
+                        .requestMatchers(HttpMethod.PATCH, "/service-requests/*/accept", "/service-requests/*/reject").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

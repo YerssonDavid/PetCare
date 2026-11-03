@@ -5,9 +5,13 @@ import com.petcare.petcarebackend.domain.enums.OfferingType;
 import com.petcare.petcarebackend.domain.enums.PurchaseType;
 import com.petcare.petcarebackend.domain.enums.RequestStatus;
 import com.petcare.petcarebackend.domain.enums.SlotStatus;
+import com.petcare.petcarebackend.domain.exception.RequestNotPendingException;
 import com.petcare.petcarebackend.domain.valueobject.OfferingName;
 import com.petcare.petcarebackend.domain.valueobject.Price;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -93,5 +97,65 @@ class ServiceRequestTest {
         assertThat(history.getStatus()).isEqualTo(RequestStatus.PENDIENTE);
         assertThat(history.getReason()).isNull();
         assertThat(history.getChangedAt()).isEqualTo(NOW);
+    }
+
+    private ServiceRequest pendingRequest() {
+        Offering offering = offering(OfferingType.SERVICIO);
+        return ServiceRequest.create(OWNER_ID, PET_ID, offering, slot(offering), null, NOW);
+    }
+
+    @Test
+    void acceptsPendingRequest() {
+        ServiceRequest request = pendingRequest();
+
+        request.accept();
+
+        assertThat(request.getStatus()).isEqualTo(RequestStatus.ACEPTADO);
+        assertThat(request.getRejectionReason()).isNull();
+    }
+
+    @Test
+    void rejectsPendingRequestKeepingTheTrimmedReason() {
+        ServiceRequest request = pendingRequest();
+
+        request.reject("  Sin disponibilidad  ");
+
+        assertThat(request.getStatus()).isEqualTo(RequestStatus.RECHAZADO);
+        assertThat(request.getRejectionReason()).isEqualTo("Sin disponibilidad");
+    }
+
+    @Test
+    void historyOfRejectedRequestCarriesTheReason() {
+        ServiceRequest request = pendingRequest();
+        request.reject("Sin disponibilidad");
+
+        ServiceRequestHistory history = ServiceRequestHistory.of(request, NOW);
+
+        assertThat(history.getStatus()).isEqualTo(RequestStatus.RECHAZADO);
+        assertThat(history.getReason()).isEqualTo("Sin disponibilidad");
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = "   ")
+    void rejectingRequiresAReasonAndLeavesTheRequestPending(String reason) {
+        ServiceRequest request = pendingRequest();
+
+        assertThatThrownBy(() -> request.reject(reason)).isInstanceOf(IllegalArgumentException.class);
+        assertThat(request.getStatus()).isEqualTo(RequestStatus.PENDIENTE);
+    }
+
+    @Test
+    void answeredRequestCannotBeAnsweredAgain() {
+        ServiceRequest accepted = pendingRequest();
+        accepted.accept();
+        ServiceRequest rejected = pendingRequest();
+        rejected.reject("Sin disponibilidad");
+
+        assertThatThrownBy(accepted::accept).isInstanceOf(RequestNotPendingException.class);
+        assertThatThrownBy(() -> accepted.reject("r")).isInstanceOf(RequestNotPendingException.class);
+        assertThatThrownBy(rejected::accept).isInstanceOf(RequestNotPendingException.class);
+        assertThatThrownBy(() -> rejected.reject("r")).isInstanceOf(RequestNotPendingException.class);
+        assertThat(rejected.getRejectionReason()).isEqualTo("Sin disponibilidad");
     }
 }

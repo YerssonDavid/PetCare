@@ -1,6 +1,7 @@
 package com.petcare.petcarebackend.infrastructure.mapper;
 
 import com.petcare.petcarebackend.domain.entity.ServiceRequest;
+import com.petcare.petcarebackend.domain.valueobject.Price;
 import com.petcare.petcarebackend.infrastructure.entity.OfferingJpa;
 import com.petcare.petcarebackend.infrastructure.entity.OwnerJpa;
 import com.petcare.petcarebackend.infrastructure.entity.PetJpa;
@@ -27,6 +28,22 @@ public final class ServiceRequestMapper {
                 request.getPurchaseType(),
                 request.getRejectionReason(),
                 request.getRequestedAt()
+        );
+    }
+
+    public static ServiceRequest toDomain(ServiceRequestJpa entity) {
+        return new ServiceRequest(
+                entity.getId(),
+                entity.getOwner().getId(),
+                entity.getPet().getId(),
+                entity.getOffering().getId(),
+                entity.getProvider().getId(),
+                entity.getSlot().getId(),
+                new Price(entity.getPrice()),
+                entity.getStatus(),
+                entity.getPurchaseType(),
+                entity.getRejectionReason(),
+                entity.getRequestedAt()
         );
     }
 }

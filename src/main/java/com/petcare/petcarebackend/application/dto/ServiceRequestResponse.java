@@ -30,6 +30,10 @@ public record ServiceRequestResponse(
         String rejectionReason,
         LocalDateTime requestedAt
 ) {
+    public static ServiceRequestResponse from(ServiceRequestDetails details) {
+        return from(details.request(), details.pet(), details.offering(), details.provider(), details.slot());
+    }
+
     public static ServiceRequestResponse from(ServiceRequest request, Pet pet, Offering offering,
                                               Provider provider, TimeSlot slot) {
         return new ServiceRequestResponse(

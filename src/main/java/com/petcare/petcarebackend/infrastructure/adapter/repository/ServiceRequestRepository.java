@@ -3,7 +3,9 @@ package com.petcare.petcarebackend.infrastructure.adapter.repository;
 import com.petcare.petcarebackend.domain.enums.OfferingType;
 import com.petcare.petcarebackend.domain.enums.RequestStatus;
 import com.petcare.petcarebackend.infrastructure.entity.ServiceRequestJpa;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -11,6 +13,8 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -33,4 +37,22 @@ public interface ServiceRequestRepository extends JpaRepository<ServiceRequestJp
                               @Param("date") LocalDate date,
                               @Param("startTime") LocalTime startTime,
                               @Param("endTime") LocalTime endTime);
+
+    @EntityGraph(attributePaths = {"owner", "pet", "offering", "provider", "slot"})
+    Optional<ServiceRequestJpa> findDetailsById(UUID id);
+
+    @EntityGraph(attributePaths = {"owner", "pet", "offering", "provider", "slot"})
+    List<ServiceRequestJpa> findByProviderIdAndStatusInOrderByRequestedAtDesc(UUID providerId, Collection<RequestStatus> statuses);
+
+    // Conditional update: the database decides the winner when several answers target one request
+    @Modifying(clearAutomatically = true)
+    @Query("""
+            update ServiceRequestJpa r
+            set r.status = :newStatus, r.rejectionReason = :rejectionReason
+            where r.id = :id and r.status = :currentStatus
+            """)
+    int updateAnswerIfCurrent(@Param("id") UUID id,
+                              @Param("currentStatus") RequestStatus currentStatus,
+                              @Param("newStatus") RequestStatus newStatus,
+                              @Param("rejectionReason") String rejectionReason);
 }

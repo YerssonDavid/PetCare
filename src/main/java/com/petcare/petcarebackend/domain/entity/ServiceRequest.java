@@ -3,6 +3,7 @@ package com.petcare.petcarebackend.domain.entity;
 import com.petcare.petcarebackend.domain.enums.OfferingType;
 import com.petcare.petcarebackend.domain.enums.PurchaseType;
 import com.petcare.petcarebackend.domain.enums.RequestStatus;
+import com.petcare.petcarebackend.domain.exception.RequestNotPendingException;
 import com.petcare.petcarebackend.domain.valueobject.Price;
 
 import java.time.LocalDateTime;
@@ -51,6 +52,26 @@ public class ServiceRequest {
         }
         return new ServiceRequest(UUID.randomUUID(), ownerId, petId, offering.getId(), offering.getProviderId(),
                 slot.getId(), offering.getPrice(), RequestStatus.PENDIENTE, purchaseType, null, now);
+    }
+
+    public void accept() {
+        ensurePending();
+        this.status = RequestStatus.ACEPTADO;
+    }
+
+    public void reject(String reason) {
+        ensurePending();
+        if (reason == null || reason.isBlank()) {
+            throw new IllegalArgumentException("Rejection reason is required");
+        }
+        this.status = RequestStatus.RECHAZADO;
+        this.rejectionReason = reason.trim();
+    }
+
+    private void ensurePending() {
+        if (status != RequestStatus.PENDIENTE) {
+            throw new RequestNotPendingException();
+        }
     }
 
     public UUID getId() {

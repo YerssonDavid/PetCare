@@ -51,6 +51,36 @@ class ServiceRequestMapperTest {
     }
 
     @Test
+    void requestToDomainCopiesEveryField() {
+        OwnerJpa owner = new OwnerJpa();
+        owner.setId(UUID.randomUUID());
+        PetJpa pet = new PetJpa();
+        pet.setId(UUID.randomUUID());
+        OfferingJpa offering = new OfferingJpa();
+        offering.setId(UUID.randomUUID());
+        ProviderJpa provider = new ProviderJpa();
+        provider.setId(UUID.randomUUID());
+        TimeSlotJpa slot = new TimeSlotJpa();
+        slot.setId(UUID.randomUUID());
+        ServiceRequestJpa entity = new ServiceRequestJpa(UUID.randomUUID(), owner, pet, offering, provider, slot,
+                new BigDecimal("45000"), RequestStatus.RECHAZADO, PurchaseType.ENTREGA, "reason", AT);
+
+        ServiceRequest request = ServiceRequestMapper.toDomain(entity);
+
+        assertThat(request.getId()).isEqualTo(entity.getId());
+        assertThat(request.getOwnerId()).isEqualTo(owner.getId());
+        assertThat(request.getPetId()).isEqualTo(pet.getId());
+        assertThat(request.getOfferingId()).isEqualTo(offering.getId());
+        assertThat(request.getProviderId()).isEqualTo(provider.getId());
+        assertThat(request.getSlotId()).isEqualTo(slot.getId());
+        assertThat(request.getPrice().value()).isEqualByComparingTo("45000");
+        assertThat(request.getStatus()).isEqualTo(RequestStatus.RECHAZADO);
+        assertThat(request.getPurchaseType()).isEqualTo(PurchaseType.ENTREGA);
+        assertThat(request.getRejectionReason()).isEqualTo("reason");
+        assertThat(request.getRequestedAt()).isEqualTo(AT);
+    }
+
+    @Test
     void historyToJpaCopiesEveryField() {
         ServiceRequestHistory history = new ServiceRequestHistory(UUID.randomUUID(), UUID.randomUUID(),
                 UUID.randomUUID(), RequestStatus.RECHAZADO, "reason", AT);

@@ -2,6 +2,7 @@ package com.petcare.petcarebackend.infrastructure.exception;
 
 import com.petcare.petcarebackend.application.exception.DuplicateServiceRequestException;
 import com.petcare.petcarebackend.application.exception.NotOfferingOwnerException;
+import com.petcare.petcarebackend.application.exception.NotRequestProviderException;
 import com.petcare.petcarebackend.application.exception.OfferingAlreadyExistsException;
 import com.petcare.petcarebackend.application.exception.OfferingNotFoundException;
 import com.petcare.petcarebackend.application.exception.OwnerAlreadyExistsException;
@@ -12,9 +13,11 @@ import com.petcare.petcarebackend.application.exception.PetNotOwnedException;
 import com.petcare.petcarebackend.application.exception.ProviderAlreadyExistsException;
 import com.petcare.petcarebackend.application.exception.ProviderNotFoundException;
 import com.petcare.petcarebackend.application.exception.RoleNotAllowedException;
+import com.petcare.petcarebackend.application.exception.ServiceRequestNotFoundException;
 import com.petcare.petcarebackend.application.exception.TimeSlotNotFoundException;
 import com.petcare.petcarebackend.application.exception.TimeSlotOverlapException;
 import com.petcare.petcarebackend.application.exception.TimeSlotUnavailableException;
+import com.petcare.petcarebackend.domain.exception.RequestNotPendingException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
@@ -112,6 +115,21 @@ public class GlobalException extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(DuplicateServiceRequestException.class)
     public ProblemDetail handleDuplicateServiceRequest(DuplicateServiceRequestException ex) {
+        return problem(HttpStatus.CONFLICT, "Conflicto", ex.getMessage());
+    }
+
+    @ExceptionHandler(ServiceRequestNotFoundException.class)
+    public ProblemDetail handleServiceRequestNotFound(ServiceRequestNotFoundException ex) {
+        return problem(HttpStatus.NOT_FOUND, "Recurso no encontrado", ex.getMessage());
+    }
+
+    @ExceptionHandler(NotRequestProviderException.class)
+    public ProblemDetail handleNotRequestProvider(NotRequestProviderException ex) {
+        return problem(HttpStatus.FORBIDDEN, "Acceso denegado", ex.getMessage());
+    }
+
+    @ExceptionHandler(RequestNotPendingException.class)
+    public ProblemDetail handleRequestNotPending(RequestNotPendingException ex) {
         return problem(HttpStatus.CONFLICT, "Conflicto", ex.getMessage());
     }
 
