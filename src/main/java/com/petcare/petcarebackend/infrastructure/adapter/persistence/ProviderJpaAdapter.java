@@ -8,6 +8,9 @@ import com.petcare.petcarebackend.infrastructure.mapper.ProviderMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+import java.util.UUID;
+
 @Component
 @RequiredArgsConstructor
 public class ProviderJpaAdapter implements ProviderRepositoryPort {
@@ -28,5 +31,10 @@ public class ProviderJpaAdapter implements ProviderRepositoryPort {
     @Override
     public boolean existsByEmail(String email) {
         return providerRepository.existsByEmail(email);
+    }
+
+    @Override
+    public Optional<Provider> findById(UUID id) {
+        return providerRepository.findById(id).map(ProviderMapper::toDomain);
     }
 }

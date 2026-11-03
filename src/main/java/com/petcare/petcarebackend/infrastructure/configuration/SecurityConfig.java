@@ -27,6 +27,10 @@ public class SecurityConfig {
                         // TODO: require authentication once JWT exists; ownerId currently comes from a request parameter
                         .requestMatchers(HttpMethod.GET, "/pets").permitAll()
                         .requestMatchers(HttpMethod.POST, "/registry/provider").permitAll()
+                        // TODO: replace with hasRole("PROVIDER") once JWT exists; providerId currently comes from the request body
+                        .requestMatchers(HttpMethod.POST, "/services").permitAll()
+                        // TODO: require authentication once JWT exists
+                        .requestMatchers(HttpMethod.GET, "/services").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

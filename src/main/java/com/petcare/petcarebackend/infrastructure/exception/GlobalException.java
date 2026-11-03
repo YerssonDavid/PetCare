@@ -1,9 +1,12 @@
 package com.petcare.petcarebackend.infrastructure.exception;
 
+import com.petcare.petcarebackend.application.exception.OfferingAlreadyExistsException;
 import com.petcare.petcarebackend.application.exception.OwnerAlreadyExistsException;
 import com.petcare.petcarebackend.application.exception.OwnerNotFoundException;
 import com.petcare.petcarebackend.application.exception.PetAlreadyExistsException;
 import com.petcare.petcarebackend.application.exception.ProviderAlreadyExistsException;
+import com.petcare.petcarebackend.application.exception.ProviderNotFoundException;
+import com.petcare.petcarebackend.application.exception.RoleNotAllowedException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
@@ -54,6 +57,16 @@ public class GlobalException extends ResponseEntityExceptionHandler {
         return problem(HttpStatus.NOT_FOUND, "Recurso no encontrado", ex.getMessage());
     }
 
+    @ExceptionHandler(ProviderNotFoundException.class)
+    public ProblemDetail handleProviderNotFound(ProviderNotFoundException ex) {
+        return problem(HttpStatus.NOT_FOUND, "Recurso no encontrado", ex.getMessage());
+    }
+
+    @ExceptionHandler(RoleNotAllowedException.class)
+    public ProblemDetail handleRoleNotAllowed(RoleNotAllowedException ex) {
+        return problem(HttpStatus.FORBIDDEN, "Acceso denegado", ex.getMessage());
+    }
+
     @ExceptionHandler(OwnerAlreadyExistsException.class)
     public ProblemDetail handleOwnerAlreadyExists(OwnerAlreadyExistsException ex) {
         return problem(HttpStatus.CONFLICT, "Conflicto", ex.getMessage());
@@ -61,6 +74,11 @@ public class GlobalException extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(PetAlreadyExistsException.class)
     public ProblemDetail handlePetAlreadyExists(PetAlreadyExistsException ex) {
+        return problem(HttpStatus.CONFLICT, "Conflicto", ex.getMessage());
+    }
+
+    @ExceptionHandler(OfferingAlreadyExistsException.class)
+    public ProblemDetail handleOfferingAlreadyExists(OfferingAlreadyExistsException ex) {
         return problem(HttpStatus.CONFLICT, "Conflicto", ex.getMessage());
     }
 
