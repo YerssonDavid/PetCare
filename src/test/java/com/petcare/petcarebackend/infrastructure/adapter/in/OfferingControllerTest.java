@@ -1,10 +1,14 @@
 package com.petcare.petcarebackend.infrastructure.adapter.in;
 
+import com.petcare.petcarebackend.application.dto.OfferingDetailResponse;
 import com.petcare.petcarebackend.application.dto.OfferingResponse;
 import com.petcare.petcarebackend.application.dto.RegisterResponse;
+import com.petcare.petcarebackend.application.dto.TimeSlotResponse;
 import com.petcare.petcarebackend.application.exception.OfferingAlreadyExistsException;
+import com.petcare.petcarebackend.application.exception.OfferingNotFoundException;
 import com.petcare.petcarebackend.application.exception.ProviderNotFoundException;
 import com.petcare.petcarebackend.application.exception.RoleNotAllowedException;
+import com.petcare.petcarebackend.application.port.in.query.OfferingDetailQuery;
 import com.petcare.petcarebackend.application.port.in.query.OfferingQuery;
 import com.petcare.petcarebackend.application.port.in.registry.OfferingRegistry;
 import com.petcare.petcarebackend.domain.enums.OfferingCategory;
@@ -20,7 +24,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -44,11 +50,14 @@ class OfferingControllerTest {
     @Mock
     private OfferingQuery offeringQuery;
 
+    @Mock
+    private OfferingDetailQuery offeringDetailQuery;
+
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(new OfferingController(offeringRegistry, offeringQuery))
+        mockMvc = MockMvcBuilders.standaloneSetup(new OfferingController(offeringRegistry, offeringQuery, offeringDetailQuery))
                 .setControllerAdvice(new GlobalException())
                 .build();
     }
@@ -138,6 +147,41 @@ class OfferingControllerTest {
         mockMvc.perform(get("/services"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isEmpty());
+    }
+
+    @Test
+    void returnsOfferingDetail() throws Exception {
+        UUID id = UUID.randomUUID();
+        UUID slotId = UUID.randomUUID();
+        when(offeringDetailQuery.getOfferingDetail(id)).thenReturn(new OfferingDetailResponse(
+                id, "Baño completo", "Baño y secado", "Vacunas al día", new BigDecimal("45000.00"),
+                OfferingCategory.PELUQUERIA, OfferingType.SERVICIO, null, PROVIDER_ID, "Vet Sol", "3111111111",
+                List.of(new TimeSlotResponse(slotId, LocalDate.of(2026, 11, 10), LocalTime.of(10, 0), LocalTime.of(11, 0)))));
+
+        mockMvc.perform(get("/services/" + id))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(id.toString()))
+                .andExpect(jsonPath("$.description").value("Baño y secado"))
+                .andExpect(jsonPath("$.conditions").value("Vacunas al día"))
+                .andExpect(jsonPath("$.price").value(45000.00))
+                .andExpect(jsonPath("$.providerName").value("Vet Sol"))
+                .andExpect(jsonPath("$.providerPhone").value("3111111111"))
+                .andExpect(jsonPath("$.freeSlots[0].id").value(slotId.toString()));
+    }
+
+    @Test
+    void returnsNotFoundForUnknownOffering() throws Exception {
+        UUID id = UUID.randomUUID();
+        when(offeringDetailQuery.getOfferingDetail(id)).thenThrow(new OfferingNotFoundException(id));
+
+        mockMvc.perform(get("/services/" + id))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void rejectsMalformedOfferingId() throws Exception {
+        mockMvc.perform(get("/services/not-a-uuid"))
+                .andExpect(status().isBadRequest());
     }
 
     @Test

@@ -30,7 +30,7 @@ public class SecurityConfig {
                         // TODO: replace with hasRole("PROVIDER") once JWT exists; providerId currently comes from the request body
                         .requestMatchers(HttpMethod.POST, "/services").permitAll()
                         // TODO: require authentication once JWT exists
-                        .requestMatchers(HttpMethod.GET, "/services").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/services", "/services/*").permitAll()
                         // TODO: replace with hasRole("PROVIDER") once JWT exists; providerId currently comes from the request body
                         .requestMatchers(HttpMethod.POST, "/services/*/slots").permitAll()
                         // TODO: require authentication once JWT exists
