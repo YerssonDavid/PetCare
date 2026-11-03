@@ -4,10 +4,12 @@ import com.petcare.petcarebackend.application.port.out.owner.OwnerRepositoryPort
 import com.petcare.petcarebackend.domain.entity.Owner;
 import com.petcare.petcarebackend.infrastructure.adapter.repository.OwnerRepository;
 import com.petcare.petcarebackend.infrastructure.entity.OwnerJpa;
+import com.petcare.petcarebackend.infrastructure.mapper.OwnerMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -42,5 +44,10 @@ public class OwnerJpaAdapter implements OwnerRepositoryPort {
     @Override
     public boolean existsById(UUID id) {
         return ownerRepository.existsById(id);
+    }
+
+    @Override
+    public Optional<Owner> findById(UUID id) {
+        return ownerRepository.findById(id).map(OwnerMapper::toDomain);
     }
 }

@@ -14,6 +14,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -52,6 +53,11 @@ public class PetJpaAdapter implements PetRepositoryPort {
         return petRepository.findByOwnerId(ownerId).stream()
                 .map(PetMapper::toDomain)
                 .toList();
+    }
+
+    @Override
+    public Optional<Pet> findByIdForUpdate(UUID id) {
+        return petRepository.findByIdForUpdate(id).map(PetMapper::toDomain);
     }
 
     private boolean isOwnerNameViolation(DataIntegrityViolationException ex) {

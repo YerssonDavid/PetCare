@@ -1,15 +1,20 @@
 package com.petcare.petcarebackend.infrastructure.exception;
 
+import com.petcare.petcarebackend.application.exception.DuplicateServiceRequestException;
 import com.petcare.petcarebackend.application.exception.NotOfferingOwnerException;
 import com.petcare.petcarebackend.application.exception.OfferingAlreadyExistsException;
 import com.petcare.petcarebackend.application.exception.OfferingNotFoundException;
 import com.petcare.petcarebackend.application.exception.OwnerAlreadyExistsException;
 import com.petcare.petcarebackend.application.exception.OwnerNotFoundException;
 import com.petcare.petcarebackend.application.exception.PetAlreadyExistsException;
+import com.petcare.petcarebackend.application.exception.PetNotFoundException;
+import com.petcare.petcarebackend.application.exception.PetNotOwnedException;
 import com.petcare.petcarebackend.application.exception.ProviderAlreadyExistsException;
 import com.petcare.petcarebackend.application.exception.ProviderNotFoundException;
 import com.petcare.petcarebackend.application.exception.RoleNotAllowedException;
+import com.petcare.petcarebackend.application.exception.TimeSlotNotFoundException;
 import com.petcare.petcarebackend.application.exception.TimeSlotOverlapException;
+import com.petcare.petcarebackend.application.exception.TimeSlotUnavailableException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
@@ -82,6 +87,31 @@ public class GlobalException extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(TimeSlotOverlapException.class)
     public ProblemDetail handleTimeSlotOverlap(TimeSlotOverlapException ex) {
+        return problem(HttpStatus.CONFLICT, "Conflicto", ex.getMessage());
+    }
+
+    @ExceptionHandler(PetNotFoundException.class)
+    public ProblemDetail handlePetNotFound(PetNotFoundException ex) {
+        return problem(HttpStatus.NOT_FOUND, "Recurso no encontrado", ex.getMessage());
+    }
+
+    @ExceptionHandler(TimeSlotNotFoundException.class)
+    public ProblemDetail handleTimeSlotNotFound(TimeSlotNotFoundException ex) {
+        return problem(HttpStatus.NOT_FOUND, "Recurso no encontrado", ex.getMessage());
+    }
+
+    @ExceptionHandler(PetNotOwnedException.class)
+    public ProblemDetail handlePetNotOwned(PetNotOwnedException ex) {
+        return problem(HttpStatus.FORBIDDEN, "Acceso denegado", ex.getMessage());
+    }
+
+    @ExceptionHandler(TimeSlotUnavailableException.class)
+    public ProblemDetail handleTimeSlotUnavailable(TimeSlotUnavailableException ex) {
+        return problem(HttpStatus.CONFLICT, "Conflicto", ex.getMessage());
+    }
+
+    @ExceptionHandler(DuplicateServiceRequestException.class)
+    public ProblemDetail handleDuplicateServiceRequest(DuplicateServiceRequestException ex) {
         return problem(HttpStatus.CONFLICT, "Conflicto", ex.getMessage());
     }
 

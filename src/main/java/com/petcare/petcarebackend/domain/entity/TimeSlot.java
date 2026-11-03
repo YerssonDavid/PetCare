@@ -42,10 +42,15 @@ public class TimeSlot {
         if (endTime.isAfter(LATEST_END_TIME)) {
             throw new IllegalArgumentException("Time slots must end by " + LATEST_END_TIME);
         }
-        if (!date.atTime(startTime).isAfter(now)) {
+        TimeSlot slot = new TimeSlot(UUID.randomUUID(), offeringId, date, startTime, endTime, SlotStatus.LIBRE);
+        if (slot.hasStarted(now)) {
             throw new IllegalArgumentException("Time slots must start in the future");
         }
-        return new TimeSlot(UUID.randomUUID(), offeringId, date, startTime, endTime, SlotStatus.LIBRE);
+        return slot;
+    }
+
+    public boolean hasStarted(LocalDateTime now) {
+        return !date.atTime(startTime).isAfter(now);
     }
 
     public UUID getId() {

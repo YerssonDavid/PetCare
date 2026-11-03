@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -29,6 +30,16 @@ public class TimeSlotJpaAdapter implements TimeSlotRepositoryPort {
         // Proxy without SELECT: the use case already verified the offering exists
         OfferingJpa offering = offeringRepository.getReferenceById(slot.getOfferingId());
         timeSlotRepository.save(TimeSlotMapper.toJpa(slot, offering));
+    }
+
+    @Override
+    public Optional<TimeSlot> findById(UUID id) {
+        return timeSlotRepository.findById(id).map(TimeSlotMapper::toDomain);
+    }
+
+    @Override
+    public boolean occupyIfFree(UUID id) {
+        return timeSlotRepository.updateStatusIfCurrent(id, SlotStatus.LIBRE, SlotStatus.OCUPADA) == 1;
     }
 
     @Override

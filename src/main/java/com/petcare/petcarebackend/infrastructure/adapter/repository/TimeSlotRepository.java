@@ -4,6 +4,7 @@ import com.petcare.petcarebackend.domain.enums.OfferingType;
 import com.petcare.petcarebackend.domain.enums.SlotStatus;
 import com.petcare.petcarebackend.infrastructure.entity.TimeSlotJpa;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -15,6 +16,13 @@ import java.util.UUID;
 
 @Repository
 public interface TimeSlotRepository extends JpaRepository<TimeSlotJpa, UUID> {
+
+    // Conditional update: the database decides the winner when several requests target one slot
+    @Modifying(clearAutomatically = true)
+    @Query("update TimeSlotJpa s set s.status = :newStatus where s.id = :id and s.status = :currentStatus")
+    int updateStatusIfCurrent(@Param("id") UUID id,
+                              @Param("currentStatus") SlotStatus currentStatus,
+                              @Param("newStatus") SlotStatus newStatus);
 
     // Adjacent slots do not overlap: 10:00-11:00 and 11:00-12:00 are both allowed
     @Query("""

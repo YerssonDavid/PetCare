@@ -80,6 +80,15 @@ class TimeSlotTest {
     }
 
     @Test
+    void hasStartedOnceItsStartTimeIsReached() {
+        TimeSlot slot = create(TOMORROW, "10:00", "11:00");
+
+        assertThat(slot.hasStarted(TOMORROW.atTime(9, 59))).isFalse();
+        assertThat(slot.hasStarted(TOMORROW.atTime(10, 0))).isTrue();
+        assertThat(slot.hasStarted(TOMORROW.atTime(10, 1))).isTrue();
+    }
+
+    @Test
     void rejectsMissingValues() {
         assertThatThrownBy(() -> TimeSlot.create(OFFERING_ID, null, LocalTime.NOON, LocalTime.of(13, 0), NOW))
                 .isInstanceOf(IllegalArgumentException.class);

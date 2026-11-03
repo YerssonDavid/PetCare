@@ -35,6 +35,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/services/*/slots").permitAll()
                         // TODO: require authentication once JWT exists
                         .requestMatchers(HttpMethod.GET, "/services/*/slots/free").permitAll()
+                        // TODO: replace with hasRole("USER") once JWT exists; ownerId currently comes from the request body
+                        .requestMatchers(HttpMethod.POST, "/service-requests").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
