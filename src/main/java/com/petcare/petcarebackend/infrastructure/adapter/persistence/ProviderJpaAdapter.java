@@ -37,4 +37,9 @@ public class ProviderJpaAdapter implements ProviderRepositoryPort {
     public Optional<Provider> findById(UUID id) {
         return providerRepository.findById(id).map(ProviderMapper::toDomain);
     }
+
+    @Override
+    public Optional<Provider> findByIdForUpdate(UUID id) {
+        return providerRepository.findByIdForUpdate(id).map(ProviderMapper::toDomain);
+    }
 }

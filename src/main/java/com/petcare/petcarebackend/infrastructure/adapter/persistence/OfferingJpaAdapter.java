@@ -15,6 +15,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -43,6 +44,11 @@ public class OfferingJpaAdapter implements OfferingRepositoryPort {
     @Override
     public boolean existsByProviderIdAndNormalizedName(UUID providerId, String normalizedName) {
         return offeringRepository.existsByProviderIdAndNameNormalized(providerId, normalizedName);
+    }
+
+    @Override
+    public Optional<Offering> findById(UUID id) {
+        return offeringRepository.findById(id).map(OfferingMapper::toDomain);
     }
 
     @Override

@@ -10,4 +10,6 @@ public interface ProviderRepositoryPort {
     boolean existsByName(String name);
     boolean existsByEmail(String email);
     Optional<Provider> findById(UUID id);
+    // Holds a row lock until the surrounding transaction ends; requires an active transaction
+    Optional<Provider> findByIdForUpdate(UUID id);
 }

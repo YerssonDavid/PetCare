@@ -1,12 +1,15 @@
 package com.petcare.petcarebackend.infrastructure.exception;
 
+import com.petcare.petcarebackend.application.exception.NotOfferingOwnerException;
 import com.petcare.petcarebackend.application.exception.OfferingAlreadyExistsException;
+import com.petcare.petcarebackend.application.exception.OfferingNotFoundException;
 import com.petcare.petcarebackend.application.exception.OwnerAlreadyExistsException;
 import com.petcare.petcarebackend.application.exception.OwnerNotFoundException;
 import com.petcare.petcarebackend.application.exception.PetAlreadyExistsException;
 import com.petcare.petcarebackend.application.exception.ProviderAlreadyExistsException;
 import com.petcare.petcarebackend.application.exception.ProviderNotFoundException;
 import com.petcare.petcarebackend.application.exception.RoleNotAllowedException;
+import com.petcare.petcarebackend.application.exception.TimeSlotOverlapException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
@@ -65,6 +68,21 @@ public class GlobalException extends ResponseEntityExceptionHandler {
     @ExceptionHandler(RoleNotAllowedException.class)
     public ProblemDetail handleRoleNotAllowed(RoleNotAllowedException ex) {
         return problem(HttpStatus.FORBIDDEN, "Acceso denegado", ex.getMessage());
+    }
+
+    @ExceptionHandler(OfferingNotFoundException.class)
+    public ProblemDetail handleOfferingNotFound(OfferingNotFoundException ex) {
+        return problem(HttpStatus.NOT_FOUND, "Recurso no encontrado", ex.getMessage());
+    }
+
+    @ExceptionHandler(NotOfferingOwnerException.class)
+    public ProblemDetail handleNotOfferingOwner(NotOfferingOwnerException ex) {
+        return problem(HttpStatus.FORBIDDEN, "Acceso denegado", ex.getMessage());
+    }
+
+    @ExceptionHandler(TimeSlotOverlapException.class)
+    public ProblemDetail handleTimeSlotOverlap(TimeSlotOverlapException ex) {
+        return problem(HttpStatus.CONFLICT, "Conflicto", ex.getMessage());
     }
 
     @ExceptionHandler(OwnerAlreadyExistsException.class)
