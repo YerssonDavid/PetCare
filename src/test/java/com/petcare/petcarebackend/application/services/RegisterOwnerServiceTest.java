@@ -5,6 +5,7 @@ import com.petcare.petcarebackend.application.dto.RegisterResponse;
 import com.petcare.petcarebackend.application.exception.OwnerAlreadyExistsException;
 import com.petcare.petcarebackend.application.port.out.owner.OwnerRepositoryPort;
 import com.petcare.petcarebackend.application.port.out.PasswordEncoder;
+import com.petcare.petcarebackend.application.port.out.provider.ProviderRepositoryPort;
 import com.petcare.petcarebackend.domain.entity.Owner;
 import com.petcare.petcarebackend.domain.enums.Role;
 import org.junit.jupiter.api.Test;
@@ -31,6 +32,9 @@ class RegisterOwnerServiceTest {
     @Mock
     private OwnerRepositoryPort ownerRepository;
 
+    @Mock
+    private ProviderRepositoryPort providerRepository;
+
     @InjectMocks
     private RegisterOwnerService service;
 
@@ -41,6 +45,7 @@ class RegisterOwnerServiceTest {
     @Test
     void savesOwnerWithHashedPasswordAndReturnsItsId() {
         when(ownerRepository.existsByEmail("ana@mail.com")).thenReturn(false);
+        when(providerRepository.existsByEmail("ana@mail.com")).thenReturn(false);
         when(passwordEncoder.encode("secret123")).thenReturn("hashed");
 
         RegisterResponse response = service.registerOwner(request("Ana@Mail.com"));
@@ -67,10 +72,22 @@ class RegisterOwnerServiceTest {
     }
 
     @Test
+    void rejectsEmailAlreadyRegisteredByProvider() {
+        when(ownerRepository.existsByEmail("ana@mail.com")).thenReturn(false);
+        when(providerRepository.existsByEmail("ana@mail.com")).thenReturn(true);
+
+        assertThatThrownBy(() -> service.registerOwner(request("ANA@mail.com")))
+                .isInstanceOf(OwnerAlreadyExistsException.class);
+        verify(passwordEncoder, never()).encode(anyString());
+        verify(ownerRepository, never()).saveOwner(any());
+    }
+
+    @Test
     void rejectsInvalidEmailBeforeTouchingRepository() {
         assertThatThrownBy(() -> service.registerOwner(request("not-an-email")))
                 .isInstanceOf(IllegalArgumentException.class);
         verify(ownerRepository, never()).existsByEmail(anyString());
+        verify(providerRepository, never()).existsByEmail(anyString());
         verify(ownerRepository, never()).saveOwner(any());
     }
 }

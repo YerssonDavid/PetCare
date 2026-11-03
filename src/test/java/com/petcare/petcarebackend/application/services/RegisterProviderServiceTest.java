@@ -3,6 +3,7 @@ package com.petcare.petcarebackend.application.services;
 import com.petcare.petcarebackend.application.dto.RegisterProviderRequest;
 import com.petcare.petcarebackend.application.dto.RegisterResponse;
 import com.petcare.petcarebackend.application.exception.ProviderAlreadyExistsException;
+import com.petcare.petcarebackend.application.port.out.owner.OwnerRepositoryPort;
 import com.petcare.petcarebackend.application.port.out.PasswordEncoder;
 import com.petcare.petcarebackend.application.port.out.provider.ProviderRepositoryPort;
 import com.petcare.petcarebackend.domain.entity.Provider;
@@ -32,6 +33,9 @@ class RegisterProviderServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private OwnerRepositoryPort ownerRepository;
+
     @InjectMocks
     private RegisterProviderService service;
 
@@ -44,6 +48,7 @@ class RegisterProviderServiceTest {
     void savesProviderWithNormalizedDataAndReturnsItsId() {
         when(providerRepository.existsByName("Vet Sol")).thenReturn(false);
         when(providerRepository.existsByEmail("vet@sol.com")).thenReturn(false);
+        when(ownerRepository.existsByEmail("vet@sol.com")).thenReturn(false);
         when(passwordEncoder.encode("secret123")).thenReturn("hashed");
 
         RegisterResponse response = service.registerProvider(request("  Vet   Sol ", "Vet@Sol.com"));
@@ -86,9 +91,22 @@ class RegisterProviderServiceTest {
     }
 
     @Test
+    void rejectsEmailAlreadyRegisteredByOwner() {
+        when(providerRepository.existsByName("Vet Sol")).thenReturn(false);
+        when(providerRepository.existsByEmail("vet@sol.com")).thenReturn(false);
+        when(ownerRepository.existsByEmail("vet@sol.com")).thenReturn(true);
+
+        assertThatThrownBy(() -> service.registerProvider(request("Vet Sol", "VET@sol.com")))
+                .isInstanceOf(ProviderAlreadyExistsException.class);
+        verify(passwordEncoder, never()).encode(anyString());
+        verify(providerRepository, never()).saveProvider(any());
+    }
+
+    @Test
     void rejectsInvalidEmailBeforeTouchingRepository() {
         assertThatThrownBy(() -> service.registerProvider(request("Vet Sol", "not-an-email")))
                 .isInstanceOf(IllegalArgumentException.class);
+        verify(ownerRepository, never()).existsByEmail(anyString());
         verify(providerRepository, never()).existsByName(anyString());
         verify(providerRepository, never()).saveProvider(any());
     }

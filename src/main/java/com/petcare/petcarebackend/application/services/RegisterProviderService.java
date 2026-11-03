@@ -4,6 +4,7 @@ import com.petcare.petcarebackend.application.dto.RegisterProviderRequest;
 import com.petcare.petcarebackend.application.dto.RegisterResponse;
 import com.petcare.petcarebackend.application.exception.ProviderAlreadyExistsException;
 import com.petcare.petcarebackend.application.port.in.registry.ProviderRegistry;
+import com.petcare.petcarebackend.application.port.out.owner.OwnerRepositoryPort;
 import com.petcare.petcarebackend.application.port.out.PasswordEncoder;
 import com.petcare.petcarebackend.application.port.out.provider.ProviderRepositoryPort;
 import com.petcare.petcarebackend.domain.entity.Provider;
@@ -21,6 +22,7 @@ public class RegisterProviderService implements ProviderRegistry {
 
     private final ProviderRepositoryPort providerRepositoryPort;
     private final PasswordEncoder passwordEncoder;
+    private final OwnerRepositoryPort ownerRepositoryPort;
 
     @Override
     public RegisterResponse registerProvider(RegisterProviderRequest request) {
@@ -29,8 +31,8 @@ public class RegisterProviderService implements ProviderRegistry {
         Email email = new Email(request.email());
         Phone phone = new Phone(request.phone());
 
-        if(providerRepositoryPort.existsByName(commercialName.value()) || providerRepositoryPort.existsByEmail(email.value()))
-            throw new ProviderAlreadyExistsException("The provider already exists");
+        if(providerRepositoryPort.existsByName(commercialName.value()) || providerRepositoryPort.existsByEmail(email.value()) || ownerRepositoryPort.existsByEmail(email.value()))
+            throw new ProviderAlreadyExistsException("Error in registry.");
 
         String hashedPassword = passwordEncoder.encode(request.password());
 
