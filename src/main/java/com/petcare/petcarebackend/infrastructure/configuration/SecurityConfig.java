@@ -24,6 +24,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/registry/owner").permitAll()
                         // TODO: require authentication once JWT exists; ownerId currently comes from the request body
                         .requestMatchers(HttpMethod.POST, "/registry/pet").permitAll()
+                        // TODO: require authentication once JWT exists; ownerId currently comes from a request parameter
+                        .requestMatchers(HttpMethod.GET, "/pets").permitAll()
                         .requestMatchers(HttpMethod.POST, "/registry/provider").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .anyRequest().authenticated())

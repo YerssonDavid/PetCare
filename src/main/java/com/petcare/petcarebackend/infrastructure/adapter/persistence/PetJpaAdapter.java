@@ -7,11 +7,13 @@ import com.petcare.petcarebackend.infrastructure.adapter.repository.OwnerReposit
 import com.petcare.petcarebackend.infrastructure.adapter.repository.PetRepository;
 import com.petcare.petcarebackend.infrastructure.entity.OwnerJpa;
 import com.petcare.petcarebackend.infrastructure.entity.PetJpa;
+import com.petcare.petcarebackend.infrastructure.mapper.PetMapper;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -27,15 +29,7 @@ public class PetJpaAdapter implements PetRepositoryPort {
         // Proxy without SELECT: the use case already verified the owner exists
         OwnerJpa owner = ownerRepository.getReferenceById(pet.getOwnerId());
 
-        PetJpa petJpa = new PetJpa(
-                pet.getId(),
-                owner,
-                pet.getName().value(),
-                pet.getName().normalized(),
-                pet.getTypePet(),
-                pet.getAge(),
-                pet.getDescription()
-        );
+        PetJpa petJpa = PetMapper.toJpa(pet, owner);
 
         try {
             // Flush now so a concurrent duplicate surfaces here, even inside a wider transaction
@@ -51,6 +45,13 @@ public class PetJpaAdapter implements PetRepositoryPort {
     @Override
     public boolean existsByOwnerIdAndNormalizedName(UUID ownerId, String normalizedName) {
         return petRepository.existsByOwnerIdAndNameNormalized(ownerId, normalizedName);
+    }
+
+    @Override
+    public List<Pet> findPetsByIdOwner(UUID ownerId) {
+        return petRepository.findByOwnerId(ownerId).stream()
+                .map(PetMapper::toDomain)
+                .toList();
     }
 
     private boolean isOwnerNameViolation(DataIntegrityViolationException ex) {
