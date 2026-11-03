@@ -4,7 +4,7 @@ import com.petcare.petcarebackend.application.dto.RegisterOwnerRequest;
 import com.petcare.petcarebackend.application.dto.RegisterResponse;
 import com.petcare.petcarebackend.application.exception.OwnerAlreadyExistsException;
 import com.petcare.petcarebackend.application.port.in.registry.OwnerRegistry;
-import com.petcare.petcarebackend.application.port.out.OwnerRepositoryPort;
+import com.petcare.petcarebackend.application.port.out.owner.OwnerRepositoryPort;
 import com.petcare.petcarebackend.application.port.out.PasswordEncoder;
 import com.petcare.petcarebackend.domain.entity.Owner;
 import com.petcare.petcarebackend.domain.valueobject.Email;

@@ -1,6 +1,6 @@
 package com.petcare.petcarebackend.infrastructure.adapter.persistence;
 
-import com.petcare.petcarebackend.application.port.out.OwnerRepositoryPort;
+import com.petcare.petcarebackend.application.port.out.owner.OwnerRepositoryPort;
 import com.petcare.petcarebackend.domain.entity.Owner;
 import com.petcare.petcarebackend.infrastructure.adapter.repository.OwnerRepository;
 import com.petcare.petcarebackend.infrastructure.entity.OwnerJpa;

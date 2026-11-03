@@ -1,7 +1,7 @@
 package com.petcare.petcarebackend.infrastructure.adapter.persistence;
 
 import com.petcare.petcarebackend.application.exception.PetAlreadyExistsException;
-import com.petcare.petcarebackend.application.port.out.PetRepositoryPort;
+import com.petcare.petcarebackend.application.port.out.pet.PetRepositoryPort;
 import com.petcare.petcarebackend.domain.entity.Pet;
 import com.petcare.petcarebackend.infrastructure.adapter.repository.OwnerRepository;
 import com.petcare.petcarebackend.infrastructure.adapter.repository.PetRepository;

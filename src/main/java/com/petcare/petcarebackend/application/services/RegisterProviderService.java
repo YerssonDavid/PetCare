@@ -5,7 +5,7 @@ import com.petcare.petcarebackend.application.dto.RegisterResponse;
 import com.petcare.petcarebackend.application.exception.ProviderAlreadyExistsException;
 import com.petcare.petcarebackend.application.port.in.registry.ProviderRegistry;
 import com.petcare.petcarebackend.application.port.out.PasswordEncoder;
-import com.petcare.petcarebackend.application.port.out.ProviderRepositoryPort;
+import com.petcare.petcarebackend.application.port.out.provider.ProviderRepositoryPort;
 import com.petcare.petcarebackend.domain.entity.Provider;
 import com.petcare.petcarebackend.domain.valueobject.CommercialName;
 import com.petcare.petcarebackend.domain.valueobject.Email;

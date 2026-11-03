@@ -1,4 +1,4 @@
-package com.petcare.petcarebackend.application.port.out;
+package com.petcare.petcarebackend.application.port.out.pet;
 
 import com.petcare.petcarebackend.domain.entity.Pet;
 
