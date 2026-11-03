@@ -50,4 +50,9 @@ public class ServiceRequestJpaAdapter implements ServiceRequestRepositoryPort {
         return serviceRequestRepository.existsOverlapping(
                 petId, ACTIVE_STATUSES, OfferingType.SERVICIO, date, startTime, endTime);
     }
+
+    @Override
+    public boolean existsActiveRequestForPetAndSlot(UUID petId, UUID slotId) {
+        return serviceRequestRepository.existsByPetIdAndSlotIdAndStatusIn(petId, slotId, ACTIVE_STATUSES);
+    }
 }

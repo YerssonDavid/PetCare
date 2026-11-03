@@ -10,4 +10,5 @@ public interface ServiceRequestRepositoryPort {
     void saveServiceRequest(ServiceRequest request);
     // Only requests for services count: products never block a pet's schedule
     boolean existsActiveServiceRequestOverlapping(UUID petId, LocalDate date, LocalTime startTime, LocalTime endTime);
+    boolean existsActiveRequestForPetAndSlot(UUID petId, UUID slotId);
 }

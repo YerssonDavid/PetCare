@@ -207,8 +207,9 @@ class CreateServiceRequestServiceTest {
     }
 
     @Test
-    void productNeitherOccupiesSlotNorChecksDuplicates() {
+    void productNeitherOccupiesSlotNorChecksTheSchedule() {
         givenSlotOf(OfferingType.PRODUCTO);
+        when(serviceRequestRepository.existsActiveRequestForPetAndSlot(PET_ID, SLOT_ID)).thenReturn(false);
 
         ServiceRequestResponse response = service.createServiceRequest(request(PurchaseType.RETIRO));
 
@@ -217,6 +218,16 @@ class CreateServiceRequestServiceTest {
         verify(serviceRequestRepository).saveServiceRequest(any());
         verify(historyRepository).saveHistory(any());
         assertThat(response.purchaseType()).isEqualTo(PurchaseType.RETIRO);
+    }
+
+    @Test
+    void rejectsRepeatedProductInTheSameSlot() {
+        givenSlotOf(OfferingType.PRODUCTO);
+        when(serviceRequestRepository.existsActiveRequestForPetAndSlot(PET_ID, SLOT_ID)).thenReturn(true);
+
+        assertThatThrownBy(() -> service.createServiceRequest(request(PurchaseType.RETIRO)))
+                .isInstanceOf(DuplicateServiceRequestException.class);
+        verifyNothingSaved();
     }
 
     @Test

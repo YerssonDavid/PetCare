@@ -84,7 +84,6 @@ public class CreateServiceRequestService implements ServiceRequestRegistry {
         ServiceRequest serviceRequest = ServiceRequest.create(
                 owner.getId(), pet.getId(), offering, slot, request.purchaseType(), now);
 
-        // Products neither occupy their slot nor block the pet's schedule
         if (offering.getType() == OfferingType.SERVICIO) {
             if (serviceRequestRepository.existsActiveServiceRequestOverlapping(
                     pet.getId(), slot.getDate(), slot.getStartTime(), slot.getEndTime())) {
@@ -93,6 +92,10 @@ public class CreateServiceRequestService implements ServiceRequestRegistry {
             if (!timeSlotRepository.occupyIfFree(slot.getId())) {
                 throw new TimeSlotUnavailableException("The time slot is already occupied");
             }
+        } else if (serviceRequestRepository.existsActiveRequestForPetAndSlot(pet.getId(), slot.getId())) {
+            // A slot belongs to one product, so this only stops repeating the same product;
+            // products never occupy their slot nor block the pet's schedule
+            throw new DuplicateServiceRequestException();
         }
 
         serviceRequestRepository.saveServiceRequest(serviceRequest);

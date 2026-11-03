@@ -41,7 +41,7 @@ public class ServiceRequestController {
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
     @ApiResponse(responseCode = "404", description = "Propietario, mascota o franja inexistente",
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
-    @ApiResponse(responseCode = "409", description = "La franja está ocupada o ya empezó, o la mascota ya tiene un servicio a esa hora",
+    @ApiResponse(responseCode = "409", description = "La franja está ocupada o ya empezó, la mascota ya tiene un servicio a esa hora, o ya solicitó ese producto en esa franja",
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
     @ApiResponse(responseCode = "500", description = "Error interno",
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))

@@ -16,6 +16,8 @@ import java.util.UUID;
 @Repository
 public interface ServiceRequestRepository extends JpaRepository<ServiceRequestJpa, UUID> {
 
+    boolean existsByPetIdAndSlotIdAndStatusIn(UUID petId, UUID slotId, Collection<RequestStatus> statuses);
+
     @Query("""
             select count(r) > 0 from ServiceRequestJpa r
             where r.pet.id = :petId
