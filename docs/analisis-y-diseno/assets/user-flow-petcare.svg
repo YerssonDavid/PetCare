@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700">
+  <rect width="1200" height="700" fill="white"/>
+  <text x="60" y="62" font-family="Arial" font-size="28" font-weight="700" fill="#111827">User Flow principal de PetCare</text>
+  <text x="60" y="96" font-family="Arial" font-size="16" fill="#4b5563">Flujo del propietario para solicitar un servicio</text>
+  <g font-family="Arial" font-size="18" text-anchor="middle">
+    <rect x="440" y="130" width="320" height="58" rx="29" fill="#2f5597"/><text x="600" y="167" fill="white">Inicio</text>
+    <rect x="390" y="235" width="420" height="66" rx="10" fill="#e8f1fb" stroke="#2f5597" stroke-width="2"/><text x="600" y="275" fill="#111827">Buscar categoría o servicio</text>
+    <rect x="390" y="350" width="420" height="66" rx="10" fill="#e8f1fb" stroke="#2f5597" stroke-width="2"/><text x="600" y="390" fill="#111827">Consultar detalle y comparar</text>
+    <rect x="390" y="465" width="420" height="66" rx="10" fill="#e8f1fb" stroke="#2f5597" stroke-width="2"/><text x="600" y="505" fill="#111827">Iniciar sesión y elegir mascota</text>
+    <rect x="390" y="580" width="420" height="66" rx="10" fill="#d9ead3" stroke="#38761d" stroke-width="2"/><text x="600" y="620" fill="#111827">Seleccionar fecha, enviar y consultar estado</text>
+  </g>
+  <g stroke="#2f5597" stroke-width="3" fill="none"><path d="M600 188v47M600 301v49M600 416v49M600 531v49"/><path d="M590 225l10 10 10-10M590 340l10 10 10-10M590 455l10 10 10-10M590 570l10 10 10-10"/></g>
+  <text x="60" y="680" font-family="Arial" font-size="16" fill="#4b5563">Nota. Elaboración propia a partir del flujo definido para el MVP de PetCare.</text>
+</svg>
