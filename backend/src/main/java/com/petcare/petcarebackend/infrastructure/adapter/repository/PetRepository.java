@@ -9,4 +9,5 @@ import java.util.UUID;
 @Repository
 public interface PetRepository extends JpaRepository<PetJpa, UUID> {
     boolean existsByOwnerIdAndNameNormalized(UUID ownerId, String nameNormalized);
+    boolean deleteByIdAndOwnerId(UUID id, UUID ownerId);
 }

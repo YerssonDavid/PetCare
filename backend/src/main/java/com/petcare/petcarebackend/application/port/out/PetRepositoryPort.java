@@ -7,4 +7,5 @@ import java.util.UUID;
 public interface PetRepositoryPort {
     void savePet(Pet pet);
     boolean existsByOwnerIdAndNormalizedName(UUID ownerId, String normalizedName);
+    boolean deleteByIdAndOwnerId(UUID petId, UUID ownerId);
 }

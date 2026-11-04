@@ -53,6 +53,11 @@ public class PetJpaAdapter implements PetRepositoryPort {
         return petRepository.existsByOwnerIdAndNameNormalized(ownerId, normalizedName);
     }
 
+    @Override
+    public boolean deleteByIdAndOwnerId(UUID petId, UUID ownerId) {
+        return petRepository.deleteByIdAndOwnerId(petId, ownerId);
+    }
+
     private boolean isOwnerNameViolation(DataIntegrityViolationException ex) {
         return ex.getCause() instanceof ConstraintViolationException cve
                 && PetJpa.UK_OWNER_NAME.equalsIgnoreCase(cve.getConstraintName());

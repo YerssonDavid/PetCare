@@ -18,6 +18,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/registry")
@@ -83,5 +86,13 @@ public class RegistryController {
     public ResponseEntity<RegisterResponse> registryProvider(@Valid @RequestBody RegisterProviderRequest register) {
         RegisterResponse response = providerRegistry.registerProvider(register);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @DeleteMapping("/pet")
+    @Operation(summary = "Eliminar mascota", description = "Elimina una mascota del propietario indicado.")
+    public ResponseEntity<Void> deletePet(@RequestParam UUID petId, @RequestParam UUID ownerId) {
+        return petRegistry.deletePet(petId, ownerId)
+                ? ResponseEntity.noContent().build()
+                : ResponseEntity.notFound().build();
     }
 }

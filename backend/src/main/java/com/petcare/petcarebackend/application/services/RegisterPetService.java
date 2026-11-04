@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 
 @Service
@@ -44,5 +45,10 @@ public class RegisterPetService implements PetRegistry {
 
         petRepository.savePet(pet);
         return new RegisterResponse(pet.getId(), "Pet registered successfully", LocalDateTime.now());
+    }
+
+    @Override
+    public boolean deletePet(UUID petId, UUID ownerId) {
+        return petRepository.deleteByIdAndOwnerId(petId, ownerId);
     }
 }
