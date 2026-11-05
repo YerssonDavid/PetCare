@@ -34,17 +34,17 @@ public class TimeSlot {
     // Create factory; "now" comes from the caller so the domain does not depend on the system clock
     public static TimeSlot create(UUID offeringId, LocalDate date, LocalTime startTime, LocalTime endTime, LocalDateTime now) {
         if (date == null || startTime == null || endTime == null) {
-            throw new IllegalArgumentException("Date, start time and end time are required");
+            throw new IllegalArgumentException("La fecha, la hora de inicio y la hora de fin son obligatorias");
         }
         if (!endTime.isAfter(startTime)) {
-            throw new IllegalArgumentException("End time must be after start time");
+            throw new IllegalArgumentException("La hora de fin debe ser posterior a la hora de inicio");
         }
         if (endTime.isAfter(LATEST_END_TIME)) {
-            throw new IllegalArgumentException("Time slots must end by " + LATEST_END_TIME);
+            throw new IllegalArgumentException("Las franjas deben terminar a más tardar a las " + LATEST_END_TIME);
         }
         TimeSlot slot = new TimeSlot(UUID.randomUUID(), offeringId, date, startTime, endTime, SlotStatus.LIBRE);
         if (slot.hasStarted(now)) {
-            throw new IllegalArgumentException("Time slots must start in the future");
+            throw new IllegalArgumentException("Las franjas deben empezar en el futuro");
         }
         return slot;
     }

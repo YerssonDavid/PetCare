@@ -28,7 +28,7 @@ public class ListReceivedServiceRequestsService implements ReceivedServiceReques
                 .orElseThrow(() -> new ProviderNotFoundException(providerId));
 
         if (provider.getRole() != Role.PROVIDER) {
-            throw new RoleNotAllowedException("Only providers can list received requests");
+            throw new RoleNotAllowedException("Solo los proveedores pueden consultar las solicitudes recibidas");
         }
 
         return serviceRequestRepository.findDetailsByProvider(providerId, status).stream()
