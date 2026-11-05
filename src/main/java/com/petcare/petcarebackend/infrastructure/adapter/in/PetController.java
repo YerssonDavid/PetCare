@@ -13,11 +13,10 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.Principal;
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/pets")
@@ -30,18 +29,19 @@ public class PetController {
     @GetMapping
     @Operation(
             summary = "Listar mascotas",
-            description = "Devuelve las mascotas de un propietario. Temporalmente no requiere autenticación hasta implementar JWT."
+            description = "Devuelve las mascotas del propietario autenticado; requiere el rol USER."
     )
     @ApiResponse(responseCode = "200", description = "Mascotas del propietario; lista vacía si no tiene ninguna",
             content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = PetResponse.class))))
-    @ApiResponse(responseCode = "400", description = "ownerId ausente o con formato inválido",
+    @ApiResponse(responseCode = "401", description = "Token ausente, inválido o expirado",
+            content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
+    @ApiResponse(responseCode = "403", description = "La cuenta no tiene el rol USER",
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
     @ApiResponse(responseCode = "404", description = "Propietario inexistente",
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
     @ApiResponse(responseCode = "500", description = "Error interno",
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
-    // TODO: remove ownerId once JWT exists; the owner ID must come from the token
-    public ResponseEntity<List<PetResponse>> getPets(@RequestParam UUID ownerId) {
-        return ResponseEntity.ok(petQuery.listPetsByOwner(ownerId));
+    public ResponseEntity<List<PetResponse>> getPets(Principal principal) {
+        return ResponseEntity.ok(petQuery.listPetsByOwner(CurrentAccount.idOf(principal)));
     }
 }

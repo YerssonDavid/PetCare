@@ -1,6 +1,5 @@
 package com.petcare.petcarebackend.application.services;
 
-import com.petcare.petcarebackend.application.dto.AcceptServiceRequestRequest;
 import com.petcare.petcarebackend.application.dto.RejectServiceRequestRequest;
 import com.petcare.petcarebackend.application.dto.ServiceRequestDetails;
 import com.petcare.petcarebackend.application.dto.ServiceRequestResponse;
@@ -40,13 +39,13 @@ public class RespondServiceRequestService implements ServiceRequestAnswerRegistr
 
     @Override
     @Transactional
-    public ServiceRequestResponse acceptServiceRequest(UUID requestId, AcceptServiceRequestRequest request) {
-        ServiceRequestDetails details = loadForProvider(requestId, request.providerId());
+    public ServiceRequestResponse acceptServiceRequest(UUID requestId, UUID providerId) {
+        ServiceRequestDetails details = loadForProvider(requestId, providerId);
         LocalDateTime now = LocalDateTime.now(clock);
 
         details.request().accept();
         if (details.slot().hasStarted(now)) {
-            throw new TimeSlotUnavailableException("The time slot has already started");
+            throw new TimeSlotUnavailableException("La franja horaria ya empezó");
         }
         storeAnswer(details.request());
         saveHistory(details.request(), now);
@@ -56,8 +55,8 @@ public class RespondServiceRequestService implements ServiceRequestAnswerRegistr
 
     @Override
     @Transactional
-    public ServiceRequestResponse rejectServiceRequest(UUID requestId, RejectServiceRequestRequest request) {
-        ServiceRequestDetails details = loadForProvider(requestId, request.providerId());
+    public ServiceRequestResponse rejectServiceRequest(UUID requestId, UUID providerId, RejectServiceRequestRequest request) {
+        ServiceRequestDetails details = loadForProvider(requestId, providerId);
         LocalDateTime now = LocalDateTime.now(clock);
 
         details.request().reject(request.reason());
@@ -78,7 +77,7 @@ public class RespondServiceRequestService implements ServiceRequestAnswerRegistr
                 .orElseThrow(() -> new ProviderNotFoundException(providerId));
 
         if (provider.getRole() != Role.PROVIDER) {
-            throw new RoleNotAllowedException("Only providers can answer requests");
+            throw new RoleNotAllowedException("Solo los proveedores pueden responder solicitudes");
         }
 
         ServiceRequestDetails details = serviceRequestRepository.findDetailsById(requestId)

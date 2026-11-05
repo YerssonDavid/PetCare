@@ -69,7 +69,7 @@ class CreateTimeSlotServiceTest {
     }
 
     private CreateTimeSlotRequest request(LocalDate date) {
-        return new CreateTimeSlotRequest(PROVIDER_ID, date, TEN, ELEVEN);
+        return new CreateTimeSlotRequest(date, TEN, ELEVEN);
     }
 
     private Offering offeringOwnedBy(UUID providerId) {
@@ -101,7 +101,7 @@ class CreateTimeSlotServiceTest {
         givenOwnerProvider();
         when(timeSlotRepository.existsOverlappingServiceSlot(PROVIDER_ID, TOMORROW, TEN, ELEVEN)).thenReturn(false);
 
-        RegisterResponse response = service.createTimeSlot(OFFERING_ID, request(TOMORROW));
+        RegisterResponse response = service.createTimeSlot(OFFERING_ID, PROVIDER_ID, request(TOMORROW));
 
         ArgumentCaptor<TimeSlot> saved = ArgumentCaptor.forClass(TimeSlot.class);
         verify(timeSlotRepository).saveTimeSlot(saved.capture());
@@ -119,7 +119,7 @@ class CreateTimeSlotServiceTest {
         givenOwnerProvider();
         when(timeSlotRepository.existsOverlappingServiceSlot(PROVIDER_ID, TOMORROW, TEN, ELEVEN)).thenReturn(false);
 
-        service.createTimeSlot(OFFERING_ID, request(TOMORROW));
+        service.createTimeSlot(OFFERING_ID, PROVIDER_ID, request(TOMORROW));
 
         InOrder order = inOrder(providerRepository, timeSlotRepository);
         order.verify(providerRepository).findByIdForUpdate(PROVIDER_ID);
@@ -132,7 +132,7 @@ class CreateTimeSlotServiceTest {
         givenOwnerProvider();
         when(timeSlotRepository.existsOverlappingServiceSlot(PROVIDER_ID, TOMORROW, TEN, ELEVEN)).thenReturn(true);
 
-        assertThatThrownBy(() -> service.createTimeSlot(OFFERING_ID, request(TOMORROW)))
+        assertThatThrownBy(() -> service.createTimeSlot(OFFERING_ID, PROVIDER_ID, request(TOMORROW)))
                 .isInstanceOf(TimeSlotOverlapException.class);
         verify(timeSlotRepository, never()).saveTimeSlot(any());
     }
@@ -143,7 +143,7 @@ class CreateTimeSlotServiceTest {
                 .thenReturn(Optional.of(offeringOfType(PROVIDER_ID, OfferingType.PRODUCTO)));
         when(providerRepository.findByIdForUpdate(PROVIDER_ID)).thenReturn(Optional.of(providerWithRole(Role.PROVIDER)));
 
-        service.createTimeSlot(OFFERING_ID, request(TOMORROW));
+        service.createTimeSlot(OFFERING_ID, PROVIDER_ID, request(TOMORROW));
 
         verify(timeSlotRepository, never()).existsOverlappingServiceSlot(any(), any(), any(), any());
         verify(timeSlotRepository).saveTimeSlot(any());
@@ -153,7 +153,7 @@ class CreateTimeSlotServiceTest {
     void usesTheClockToRejectPastSlots() {
         givenOwnerProvider();
 
-        assertThatThrownBy(() -> service.createTimeSlot(OFFERING_ID, request(LocalDate.of(2026, 11, 9))))
+        assertThatThrownBy(() -> service.createTimeSlot(OFFERING_ID, PROVIDER_ID, request(LocalDate.of(2026, 11, 9))))
                 .isInstanceOf(IllegalArgumentException.class);
         verify(timeSlotRepository, never()).saveTimeSlot(any());
     }
@@ -162,7 +162,7 @@ class CreateTimeSlotServiceTest {
     void rejectsUnknownOffering() {
         when(offeringRepository.findById(OFFERING_ID)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.createTimeSlot(OFFERING_ID, request(TOMORROW)))
+        assertThatThrownBy(() -> service.createTimeSlot(OFFERING_ID, PROVIDER_ID, request(TOMORROW)))
                 .isInstanceOf(OfferingNotFoundException.class);
         verify(timeSlotRepository, never()).saveTimeSlot(any());
     }
@@ -172,7 +172,7 @@ class CreateTimeSlotServiceTest {
         when(offeringRepository.findById(OFFERING_ID)).thenReturn(Optional.of(offeringOwnedBy(PROVIDER_ID)));
         when(providerRepository.findByIdForUpdate(PROVIDER_ID)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.createTimeSlot(OFFERING_ID, request(TOMORROW)))
+        assertThatThrownBy(() -> service.createTimeSlot(OFFERING_ID, PROVIDER_ID, request(TOMORROW)))
                 .isInstanceOf(ProviderNotFoundException.class);
         verify(timeSlotRepository, never()).saveTimeSlot(any());
     }
@@ -182,7 +182,7 @@ class CreateTimeSlotServiceTest {
         when(offeringRepository.findById(OFFERING_ID)).thenReturn(Optional.of(offeringOwnedBy(PROVIDER_ID)));
         when(providerRepository.findByIdForUpdate(PROVIDER_ID)).thenReturn(Optional.of(providerWithRole(Role.USER)));
 
-        assertThatThrownBy(() -> service.createTimeSlot(OFFERING_ID, request(TOMORROW)))
+        assertThatThrownBy(() -> service.createTimeSlot(OFFERING_ID, PROVIDER_ID, request(TOMORROW)))
                 .isInstanceOf(RoleNotAllowedException.class);
         verify(timeSlotRepository, never()).saveTimeSlot(any());
     }
@@ -192,7 +192,7 @@ class CreateTimeSlotServiceTest {
         when(offeringRepository.findById(OFFERING_ID)).thenReturn(Optional.of(offeringOwnedBy(UUID.randomUUID())));
         when(providerRepository.findByIdForUpdate(PROVIDER_ID)).thenReturn(Optional.of(providerWithRole(Role.PROVIDER)));
 
-        assertThatThrownBy(() -> service.createTimeSlot(OFFERING_ID, request(TOMORROW)))
+        assertThatThrownBy(() -> service.createTimeSlot(OFFERING_ID, PROVIDER_ID, request(TOMORROW)))
                 .isInstanceOf(NotOfferingOwnerException.class);
         verify(timeSlotRepository, never()).saveTimeSlot(any());
     }

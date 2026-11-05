@@ -1,6 +1,5 @@
 package com.petcare.petcarebackend.application.services;
 
-import com.petcare.petcarebackend.application.dto.AcceptServiceRequestRequest;
 import com.petcare.petcarebackend.application.dto.RejectServiceRequestRequest;
 import com.petcare.petcarebackend.application.dto.ServiceRequestDetails;
 import com.petcare.petcarebackend.application.dto.ServiceRequestResponse;
@@ -130,12 +129,8 @@ class RespondServiceRequestServiceTest {
         when(serviceRequestRepository.findDetailsById(REQUEST_ID)).thenReturn(Optional.of(details(type, status, slotStart)));
     }
 
-    private AcceptServiceRequestRequest accept() {
-        return new AcceptServiceRequestRequest(PROVIDER_ID);
-    }
-
     private RejectServiceRequestRequest reject() {
-        return new RejectServiceRequestRequest(PROVIDER_ID, REASON);
+        return new RejectServiceRequestRequest(REASON);
     }
 
     private ServiceRequestHistory savedHistory() {
@@ -155,7 +150,7 @@ class RespondServiceRequestServiceTest {
         givenPendingRequestOf(OfferingType.SERVICIO);
         when(serviceRequestRepository.updateIfPending(any())).thenReturn(true);
 
-        ServiceRequestResponse response = service.acceptServiceRequest(REQUEST_ID, accept());
+        ServiceRequestResponse response = service.acceptServiceRequest(REQUEST_ID, PROVIDER_ID);
 
         ArgumentCaptor<ServiceRequest> stored = ArgumentCaptor.forClass(ServiceRequest.class);
         verify(serviceRequestRepository).updateIfPending(stored.capture());
@@ -182,7 +177,7 @@ class RespondServiceRequestServiceTest {
         givenPendingRequestOf(OfferingType.SERVICIO);
         when(serviceRequestRepository.updateIfPending(any())).thenReturn(true);
 
-        ServiceRequestResponse response = service.rejectServiceRequest(REQUEST_ID, reject());
+        ServiceRequestResponse response = service.rejectServiceRequest(REQUEST_ID, PROVIDER_ID, reject());
 
         ArgumentCaptor<ServiceRequest> stored = ArgumentCaptor.forClass(ServiceRequest.class);
         verify(serviceRequestRepository).updateIfPending(stored.capture());
@@ -203,7 +198,7 @@ class RespondServiceRequestServiceTest {
         givenPendingRequestOf(OfferingType.SERVICIO);
         when(serviceRequestRepository.updateIfPending(any())).thenReturn(true);
 
-        service.rejectServiceRequest(REQUEST_ID, reject());
+        service.rejectServiceRequest(REQUEST_ID, PROVIDER_ID, reject());
 
         InOrder order = inOrder(serviceRequestRepository, timeSlotRepository, historyRepository);
         order.verify(serviceRequestRepository).updateIfPending(any());
@@ -215,7 +210,7 @@ class RespondServiceRequestServiceTest {
     void cannotAcceptOnceTheSlotStartTimeIsReached() {
         givenRequest(OfferingType.SERVICIO, RequestStatus.PENDIENTE, NOW);
 
-        assertThatThrownBy(() -> service.acceptServiceRequest(REQUEST_ID, accept()))
+        assertThatThrownBy(() -> service.acceptServiceRequest(REQUEST_ID, PROVIDER_ID))
                 .isInstanceOf(TimeSlotUnavailableException.class);
         verifyNothingChanged();
     }
@@ -225,7 +220,7 @@ class RespondServiceRequestServiceTest {
         givenRequest(OfferingType.SERVICIO, RequestStatus.PENDIENTE, NOW.plusMinutes(1));
         when(serviceRequestRepository.updateIfPending(any())).thenReturn(true);
 
-        ServiceRequestResponse response = service.acceptServiceRequest(REQUEST_ID, accept());
+        ServiceRequestResponse response = service.acceptServiceRequest(REQUEST_ID, PROVIDER_ID);
 
         assertThat(response.status()).isEqualTo(RequestStatus.ACEPTADO);
     }
@@ -234,7 +229,7 @@ class RespondServiceRequestServiceTest {
     void cannotAcceptAProductOncePickupTimeIsReached() {
         givenRequest(OfferingType.PRODUCTO, RequestStatus.PENDIENTE, NOW);
 
-        assertThatThrownBy(() -> service.acceptServiceRequest(REQUEST_ID, accept()))
+        assertThatThrownBy(() -> service.acceptServiceRequest(REQUEST_ID, PROVIDER_ID))
                 .isInstanceOf(TimeSlotUnavailableException.class);
         verifyNothingChanged();
     }
@@ -243,7 +238,7 @@ class RespondServiceRequestServiceTest {
     void answeredRequestReportsThatEvenIfTheSlotAlreadyStarted() {
         givenRequest(OfferingType.SERVICIO, RequestStatus.RECHAZADO, NOW.minusDays(1));
 
-        assertThatThrownBy(() -> service.acceptServiceRequest(REQUEST_ID, accept()))
+        assertThatThrownBy(() -> service.acceptServiceRequest(REQUEST_ID, PROVIDER_ID))
                 .isInstanceOf(RequestNotPendingException.class);
         verifyNothingChanged();
     }
@@ -253,7 +248,7 @@ class RespondServiceRequestServiceTest {
         givenRequest(OfferingType.SERVICIO, RequestStatus.PENDIENTE, NOW);
         when(serviceRequestRepository.updateIfPending(any())).thenReturn(true);
 
-        ServiceRequestResponse response = service.rejectServiceRequest(REQUEST_ID, reject());
+        ServiceRequestResponse response = service.rejectServiceRequest(REQUEST_ID, PROVIDER_ID, reject());
 
         verify(timeSlotRepository, never()).release(any());
         assertThat(savedHistory().getReason()).isEqualTo(REASON);
@@ -266,7 +261,7 @@ class RespondServiceRequestServiceTest {
         givenRequest(OfferingType.SERVICIO, RequestStatus.PENDIENTE, NOW.plusMinutes(1));
         when(serviceRequestRepository.updateIfPending(any())).thenReturn(true);
 
-        service.rejectServiceRequest(REQUEST_ID, reject());
+        service.rejectServiceRequest(REQUEST_ID, PROVIDER_ID, reject());
 
         verify(timeSlotRepository).release(SLOT_ID);
     }
@@ -276,7 +271,7 @@ class RespondServiceRequestServiceTest {
         givenPendingRequestOf(OfferingType.PRODUCTO);
         when(serviceRequestRepository.updateIfPending(any())).thenReturn(true);
 
-        service.rejectServiceRequest(REQUEST_ID, reject());
+        service.rejectServiceRequest(REQUEST_ID, PROVIDER_ID, reject());
 
         verify(timeSlotRepository, never()).release(any());
         assertThat(savedHistory().getStatus()).isEqualTo(RequestStatus.RECHAZADO);
@@ -287,7 +282,7 @@ class RespondServiceRequestServiceTest {
         givenPendingRequestOf(OfferingType.SERVICIO);
         when(serviceRequestRepository.updateIfPending(any())).thenReturn(false);
 
-        assertThatThrownBy(() -> service.rejectServiceRequest(REQUEST_ID, reject()))
+        assertThatThrownBy(() -> service.rejectServiceRequest(REQUEST_ID, PROVIDER_ID, reject()))
                 .isInstanceOf(RequestNotPendingException.class);
         verify(timeSlotRepository, never()).release(any());
         verify(historyRepository, never()).saveHistory(any());
@@ -298,7 +293,7 @@ class RespondServiceRequestServiceTest {
         givenPendingRequestOf(OfferingType.SERVICIO);
         when(serviceRequestRepository.updateIfPending(any())).thenReturn(false);
 
-        assertThatThrownBy(() -> service.acceptServiceRequest(REQUEST_ID, accept()))
+        assertThatThrownBy(() -> service.acceptServiceRequest(REQUEST_ID, PROVIDER_ID))
                 .isInstanceOf(RequestNotPendingException.class);
         verify(historyRepository, never()).saveHistory(any());
     }
@@ -307,7 +302,7 @@ class RespondServiceRequestServiceTest {
     void cannotAnswerARequestThatIsNotPending() {
         givenRequest(OfferingType.SERVICIO, RequestStatus.ACEPTADO);
 
-        assertThatThrownBy(() -> service.rejectServiceRequest(REQUEST_ID, reject()))
+        assertThatThrownBy(() -> service.rejectServiceRequest(REQUEST_ID, PROVIDER_ID, reject()))
                 .isInstanceOf(RequestNotPendingException.class);
         verifyNothingChanged();
     }
@@ -316,7 +311,7 @@ class RespondServiceRequestServiceTest {
     void blankReasonChangesNothing() {
         givenPendingRequestOf(OfferingType.SERVICIO);
 
-        assertThatThrownBy(() -> service.rejectServiceRequest(REQUEST_ID, new RejectServiceRequestRequest(PROVIDER_ID, "  ")))
+        assertThatThrownBy(() -> service.rejectServiceRequest(REQUEST_ID, PROVIDER_ID, new RejectServiceRequestRequest("  ")))
                 .isInstanceOf(IllegalArgumentException.class);
         verifyNothingChanged();
     }
@@ -328,7 +323,7 @@ class RespondServiceRequestServiceTest {
         when(serviceRequestRepository.findDetailsById(REQUEST_ID))
                 .thenReturn(Optional.of(details(OfferingType.SERVICIO, RequestStatus.PENDIENTE)));
 
-        assertThatThrownBy(() -> service.acceptServiceRequest(REQUEST_ID, new AcceptServiceRequestRequest(otherProviderId)))
+        assertThatThrownBy(() -> service.acceptServiceRequest(REQUEST_ID, otherProviderId))
                 .isInstanceOf(NotRequestProviderException.class);
         verifyNothingChanged();
     }
@@ -338,7 +333,7 @@ class RespondServiceRequestServiceTest {
         when(providerRepository.findById(PROVIDER_ID)).thenReturn(Optional.of(provider(PROVIDER_ID, Role.PROVIDER)));
         when(serviceRequestRepository.findDetailsById(REQUEST_ID)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.acceptServiceRequest(REQUEST_ID, accept()))
+        assertThatThrownBy(() -> service.acceptServiceRequest(REQUEST_ID, PROVIDER_ID))
                 .isInstanceOf(ServiceRequestNotFoundException.class);
         verifyNothingChanged();
     }
@@ -347,7 +342,7 @@ class RespondServiceRequestServiceTest {
     void rejectsAccountWithoutProviderRole() {
         when(providerRepository.findById(PROVIDER_ID)).thenReturn(Optional.of(provider(PROVIDER_ID, Role.USER)));
 
-        assertThatThrownBy(() -> service.acceptServiceRequest(REQUEST_ID, accept()))
+        assertThatThrownBy(() -> service.acceptServiceRequest(REQUEST_ID, PROVIDER_ID))
                 .isInstanceOf(RoleNotAllowedException.class);
         verify(serviceRequestRepository, never()).findDetailsById(any());
         verifyNothingChanged();
@@ -357,7 +352,7 @@ class RespondServiceRequestServiceTest {
     void rejectsUnknownProvider() {
         when(providerRepository.findById(PROVIDER_ID)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.rejectServiceRequest(REQUEST_ID, reject()))
+        assertThatThrownBy(() -> service.rejectServiceRequest(REQUEST_ID, PROVIDER_ID, reject()))
                 .isInstanceOf(ProviderNotFoundException.class);
         verifyNothingChanged();
     }

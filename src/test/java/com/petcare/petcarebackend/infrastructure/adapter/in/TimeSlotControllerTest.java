@@ -37,6 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class TimeSlotControllerTest {
 
     private static final UUID OFFERING_ID = UUID.randomUUID();
+    private static final UUID PROVIDER_ID = UUID.randomUUID();
     private static final String SLOTS_URL = "/services/" + OFFERING_ID + "/slots";
 
     @Mock
@@ -57,69 +58,68 @@ class TimeSlotControllerTest {
     private String body(String date) {
         return """
                 {
-                  "providerId": "%s",
                   "date": "%s",
                   "startTime": "10:00",
                   "endTime": "11:00"
                 }
-                """.formatted(UUID.randomUUID(), date);
+                """.formatted(date);
     }
 
     @Test
     void createsTimeSlot() throws Exception {
         UUID id = UUID.randomUUID();
-        when(timeSlotRegistry.createTimeSlot(eq(OFFERING_ID), any()))
+        when(timeSlotRegistry.createTimeSlot(eq(OFFERING_ID), eq(PROVIDER_ID), any()))
                 .thenReturn(new RegisterResponse(id, "ok", LocalDateTime.now()));
 
-        mockMvc.perform(post(SLOTS_URL).contentType(MediaType.APPLICATION_JSON).content(body("2026-11-10")))
+        mockMvc.perform(post(SLOTS_URL).principal(PROVIDER_ID::toString).contentType(MediaType.APPLICATION_JSON).content(body("2026-11-10")))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(id.toString()));
     }
 
     @Test
     void rejectsMissingFields() throws Exception {
-        mockMvc.perform(post(SLOTS_URL).contentType(MediaType.APPLICATION_JSON).content("{}"))
+        mockMvc.perform(post(SLOTS_URL).principal(PROVIDER_ID::toString).contentType(MediaType.APPLICATION_JSON).content("{}"))
                 .andExpect(status().isBadRequest());
-        verify(timeSlotRegistry, never()).createTimeSlot(any(), any());
+        verify(timeSlotRegistry, never()).createTimeSlot(any(), any(), any());
     }
 
     @Test
     void rejectsMalformedDate() throws Exception {
-        mockMvc.perform(post(SLOTS_URL).contentType(MediaType.APPLICATION_JSON).content(body("10/11/2026")))
+        mockMvc.perform(post(SLOTS_URL).principal(PROVIDER_ID::toString).contentType(MediaType.APPLICATION_JSON).content(body("10/11/2026")))
                 .andExpect(status().isBadRequest());
-        verify(timeSlotRegistry, never()).createTimeSlot(any(), any());
+        verify(timeSlotRegistry, never()).createTimeSlot(any(), any(), any());
     }
 
     @Test
     void returnsBadRequestWhenTheDomainRejectsTheSlot() throws Exception {
-        when(timeSlotRegistry.createTimeSlot(eq(OFFERING_ID), any()))
+        when(timeSlotRegistry.createTimeSlot(eq(OFFERING_ID), eq(PROVIDER_ID), any()))
                 .thenThrow(new IllegalArgumentException("Time slots must end by 17:00"));
 
-        mockMvc.perform(post(SLOTS_URL).contentType(MediaType.APPLICATION_JSON).content(body("2026-11-10")))
+        mockMvc.perform(post(SLOTS_URL).principal(PROVIDER_ID::toString).contentType(MediaType.APPLICATION_JSON).content(body("2026-11-10")))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void returnsForbiddenForAnotherProvidersOffering() throws Exception {
-        when(timeSlotRegistry.createTimeSlot(eq(OFFERING_ID), any())).thenThrow(new NotOfferingOwnerException());
+        when(timeSlotRegistry.createTimeSlot(eq(OFFERING_ID), eq(PROVIDER_ID), any())).thenThrow(new NotOfferingOwnerException());
 
-        mockMvc.perform(post(SLOTS_URL).contentType(MediaType.APPLICATION_JSON).content(body("2026-11-10")))
+        mockMvc.perform(post(SLOTS_URL).principal(PROVIDER_ID::toString).contentType(MediaType.APPLICATION_JSON).content(body("2026-11-10")))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     void returnsNotFoundForUnknownOfferingWhenCreating() throws Exception {
-        when(timeSlotRegistry.createTimeSlot(eq(OFFERING_ID), any())).thenThrow(new OfferingNotFoundException(OFFERING_ID));
+        when(timeSlotRegistry.createTimeSlot(eq(OFFERING_ID), eq(PROVIDER_ID), any())).thenThrow(new OfferingNotFoundException(OFFERING_ID));
 
-        mockMvc.perform(post(SLOTS_URL).contentType(MediaType.APPLICATION_JSON).content(body("2026-11-10")))
+        mockMvc.perform(post(SLOTS_URL).principal(PROVIDER_ID::toString).contentType(MediaType.APPLICATION_JSON).content(body("2026-11-10")))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void returnsConflictForOverlappingSlot() throws Exception {
-        when(timeSlotRegistry.createTimeSlot(eq(OFFERING_ID), any())).thenThrow(new TimeSlotOverlapException());
+        when(timeSlotRegistry.createTimeSlot(eq(OFFERING_ID), eq(PROVIDER_ID), any())).thenThrow(new TimeSlotOverlapException());
 
-        mockMvc.perform(post(SLOTS_URL).contentType(MediaType.APPLICATION_JSON).content(body("2026-11-10")))
+        mockMvc.perform(post(SLOTS_URL).principal(PROVIDER_ID::toString).contentType(MediaType.APPLICATION_JSON).content(body("2026-11-10")))
                 .andExpect(status().isConflict());
     }
 

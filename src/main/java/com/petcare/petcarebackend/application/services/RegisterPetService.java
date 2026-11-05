@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 
 @Service
@@ -23,19 +24,19 @@ public class RegisterPetService implements PetRegistry {
     private final OwnerRepositoryPort ownerRepository;
 
     @Override
-    public RegisterResponse registerPet(RegisterPetRequest request) {
-        if(!ownerRepository.existsById(request.ownerId())){
-            throw new OwnerNotFoundException(request.ownerId());
+    public RegisterResponse registerPet(UUID ownerId, RegisterPetRequest request) {
+        if(!ownerRepository.existsById(ownerId)){
+            throw new OwnerNotFoundException(ownerId);
         }
 
         PetName name = new PetName(request.name());
 
-        if(petRepository.existsByOwnerIdAndNormalizedName(request.ownerId(), name.normalized())){
+        if(petRepository.existsByOwnerIdAndNormalizedName(ownerId, name.normalized())){
             throw new PetAlreadyExistsException(name.value());
         }
 
         Pet pet = Pet.register(
-                request.ownerId(),
+                ownerId,
                 name,
                 request.typePet(),
                 request.age(),
@@ -43,6 +44,6 @@ public class RegisterPetService implements PetRegistry {
         );
 
         petRepository.savePet(pet);
-        return new RegisterResponse(pet.getId(), "Pet registered successfully", LocalDateTime.now());
+        return new RegisterResponse(pet.getId(), "La mascota se ha registrado correctamente", LocalDateTime.now());
     }
 }

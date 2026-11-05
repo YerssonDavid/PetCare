@@ -34,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -51,12 +52,12 @@ public class CreateServiceRequestService implements ServiceRequestRegistry {
     // Any failure rolls everything back, so a slot is never left occupied without its request
     @Override
     @Transactional
-    public ServiceRequestResponse createServiceRequest(CreateServiceRequestRequest request) {
-        Owner owner = ownerRepository.findById(request.ownerId())
-                .orElseThrow(() -> new OwnerNotFoundException(request.ownerId()));
+    public ServiceRequestResponse createServiceRequest(UUID ownerId, CreateServiceRequestRequest request) {
+        Owner owner = ownerRepository.findById(ownerId)
+                .orElseThrow(() -> new OwnerNotFoundException(ownerId));
 
         if (owner.getRole() != Role.USER) {
-            throw new RoleNotAllowedException("Only owners can request services");
+            throw new RoleNotAllowedException("Solo los propietarios pueden solicitar servicios");
         }
 
         // The lock makes concurrent requests of one pet run one at a time, so two overlapping
@@ -73,7 +74,7 @@ public class CreateServiceRequestService implements ServiceRequestRegistry {
 
         LocalDateTime now = LocalDateTime.now(clock);
         if (slot.hasStarted(now)) {
-            throw new TimeSlotUnavailableException("The time slot has already started");
+            throw new TimeSlotUnavailableException("La franja horaria ya empezó");
         }
 
         Offering offering = offeringRepository.findById(slot.getOfferingId())
@@ -87,15 +88,15 @@ public class CreateServiceRequestService implements ServiceRequestRegistry {
         if (offering.getType() == OfferingType.SERVICIO) {
             if (serviceRequestRepository.existsActiveServiceRequestOverlapping(
                     pet.getId(), slot.getDate(), slot.getStartTime(), slot.getEndTime())) {
-                throw new DuplicateServiceRequestException();
+                throw new DuplicateServiceRequestException("La mascota ya tiene una solicitud activa a esa hora");
             }
             if (!timeSlotRepository.occupyIfFree(slot.getId())) {
-                throw new TimeSlotUnavailableException("The time slot is already occupied");
+                throw new TimeSlotUnavailableException("La franja horaria ya está ocupada");
             }
         } else if (serviceRequestRepository.existsActiveRequestForPetAndSlot(pet.getId(), slot.getId())) {
             // A slot belongs to one product, so this only stops repeating the same product;
             // products never occupy their slot nor block the pet's schedule
-            throw new DuplicateServiceRequestException();
+            throw new DuplicateServiceRequestException("La mascota ya tiene una solicitud activa de este producto en esa franja");
         }
 
         serviceRequestRepository.saveServiceRequest(serviceRequest);

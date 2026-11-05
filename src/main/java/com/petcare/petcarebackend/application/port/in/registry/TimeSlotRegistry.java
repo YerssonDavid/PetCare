@@ -6,5 +6,5 @@ import com.petcare.petcarebackend.application.dto.RegisterResponse;
 import java.util.UUID;
 
 public interface TimeSlotRegistry {
-    RegisterResponse createTimeSlot(UUID offeringId, CreateTimeSlotRequest request);
+    RegisterResponse createTimeSlot(UUID offeringId, UUID providerId, CreateTimeSlotRequest request);
 }
