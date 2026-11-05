@@ -122,9 +122,9 @@ class ServiceRequestQueriesTest {
         List<ServiceRequestResponse> responses = listOwner.listOwnerServiceRequests(OWNER_ID);
 
         assertThat(responses).hasSize(1);
-        assertThat(responses.getFirst().id()).isEqualTo(REQUEST_ID);
-        assertThat(responses.getFirst().status()).isEqualTo(RequestStatus.ACEPTADO);
-        assertThat(responses.getFirst().requestedAt()).isEqualTo(NOW.minusDays(2));
+        assertThat(responses.get(0).id()).isEqualTo(REQUEST_ID);
+        assertThat(responses.get(0).status()).isEqualTo(RequestStatus.ACEPTADO);
+        assertThat(responses.get(0).requestedAt()).isEqualTo(NOW.minusDays(2));
     }
 
     @Test
@@ -153,9 +153,9 @@ class ServiceRequestQueriesTest {
         List<ReceivedServiceRequestResponse> responses = listProvided.listProvidedServiceRequests(PROVIDER_ID);
 
         assertThat(responses).hasSize(1);
-        assertThat(responses.getFirst().offeringDescription()).isEqualTo("Baño y secado");
-        assertThat(responses.getFirst().pet().name()).isEqualTo("Firulais");
-        assertThat(responses.getFirst().ownerEmail()).isEqualTo("ana@mail.com");
+        assertThat(responses.get(0).offeringDescription()).isEqualTo("Baño y secado");
+        assertThat(responses.get(0).pet().name()).isEqualTo("Firulais");
+        assertThat(responses.get(0).ownerEmail()).isEqualTo("ana@mail.com");
     }
 
     @Test

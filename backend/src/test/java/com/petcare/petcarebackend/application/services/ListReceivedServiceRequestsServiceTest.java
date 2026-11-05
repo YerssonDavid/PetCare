@@ -96,7 +96,7 @@ class ListReceivedServiceRequestsServiceTest {
                 service.listReceivedServiceRequests(PROVIDER_ID, RequestStatus.PENDIENTE);
 
         assertThat(responses).hasSize(1);
-        ReceivedServiceRequestResponse response = responses.getFirst();
+        ReceivedServiceRequestResponse response = responses.get(0);
         assertThat(response.id()).isEqualTo(details.request().getId());
         assertThat(response.ownerEmail()).isEqualTo("ana@mail.com");
         assertThat(response.pet().id()).isEqualTo(PET_ID);
