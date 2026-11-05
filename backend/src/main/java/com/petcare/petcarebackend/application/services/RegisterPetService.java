@@ -5,7 +5,7 @@ import com.petcare.petcarebackend.application.dto.RegisterResponse;
 import com.petcare.petcarebackend.application.exception.OwnerNotFoundException;
 import com.petcare.petcarebackend.application.exception.PetAlreadyExistsException;
 import com.petcare.petcarebackend.application.port.in.registry.PetRegistry;
-import com.petcare.petcarebackend.application.port.out.OwnerRepositoryPort;
+import com.petcare.petcarebackend.application.port.out.owner.OwnerRepositoryPort;
 import com.petcare.petcarebackend.application.port.out.PetRepositoryPort;
 import com.petcare.petcarebackend.domain.entity.Pet;
 import com.petcare.petcarebackend.domain.valueobject.PetName;
