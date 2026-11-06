@@ -3,7 +3,6 @@ package com.petcare.petcarebackend.infrastructure.adapter.in;
 import com.petcare.petcarebackend.application.dto.LoginRequest;
 import com.petcare.petcarebackend.application.dto.LoginResponse;
 import com.petcare.petcarebackend.application.dto.RefreshTokenRequest;
-import com.petcare.petcarebackend.application.exception.AccountNotFoundException;
 import com.petcare.petcarebackend.application.exception.InvalidCredentialsException;
 import com.petcare.petcarebackend.application.exception.InvalidRefreshTokenException;
 import com.petcare.petcarebackend.application.port.in.login.LoginUser;
@@ -141,16 +140,6 @@ class LoginControllerTest {
                 """)
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.detail").value("El formato del correo no es válido"));
-    }
-
-    @Test
-    void answersNotFoundWhenNoAccountHasTheEmail() throws Exception {
-        when(loginUser.loginUsers(any())).thenThrow(new AccountNotFoundException());
-
-        login(VALID_BODY)
-                .andExpect(status().isNotFound())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
-                .andExpect(jsonPath("$.detail").value("No existe una cuenta con ese correo"));
     }
 
     private ResultActions refresh(String body) throws Exception {

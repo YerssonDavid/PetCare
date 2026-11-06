@@ -5,7 +5,6 @@ import com.petcare.petcarebackend.application.dto.IssuedRefreshToken;
 import com.petcare.petcarebackend.application.dto.LoginAccount;
 import com.petcare.petcarebackend.application.dto.LoginRequest;
 import com.petcare.petcarebackend.application.dto.LoginResponse;
-import com.petcare.petcarebackend.application.exception.AccountNotFoundException;
 import com.petcare.petcarebackend.application.exception.InvalidCredentialsException;
 import com.petcare.petcarebackend.application.port.out.PasswordEncoder;
 import com.petcare.petcarebackend.application.port.out.login.JwtPort;
@@ -28,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -38,6 +38,7 @@ class LoginServiceTest {
     private static final String EMAIL = "ana@mail.com";
     private static final String PASSWORD = "secret123";
     private static final String ACCOUNT_HASH = "account-hash";
+    private static final String DUMMY_HASH = "dummy-hash";
     private static final String ACCESS_TOKEN = "signed-token";
     private static final String REFRESH_TOKEN = "refresh-token";
     private static final String REFRESH_HASH = "refresh-hash";
@@ -60,6 +61,7 @@ class LoginServiceTest {
 
     @BeforeEach
     void setUp() {
+        when(passwordEncoder.encode(any())).thenReturn(DUMMY_HASH);
         service = new LoginService(loginUsersPort, passwordEncoder, new AuthTokenIssuer(jwtPort, refreshTokenRepository));
     }
 
@@ -131,15 +133,33 @@ class LoginServiceTest {
         verify(loginUsersPort).findByEmail(EMAIL);
     }
 
+    // Same exception and message as a wrong password, so the answer does not reveal which emails exist
     @Test
-    void rejectsAnEmailWithNoAccountWithoutCheckingThePassword() {
+    void rejectsAnEmailWithNoAccountAsInvalidCredentials() {
         when(loginUsersPort.findByEmail(EMAIL)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.loginUsers(request()))
-                .isInstanceOf(AccountNotFoundException.class)
-                .hasMessage("No existe una cuenta con ese correo");
-        verifyNoInteractions(passwordEncoder);
+                .isInstanceOf(InvalidCredentialsException.class)
+                .hasMessage("Correo o contraseña incorrectos");
         verifyNoTokenIssued();
+    }
+
+    // Comparing against the dummy hash makes an unknown email cost as much time as a wrong password
+    @Test
+    void checksThePasswordAgainstTheDummyHashWhenTheEmailHasNoAccount() {
+        when(loginUsersPort.findByEmail(EMAIL)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.loginUsers(request())).isInstanceOf(InvalidCredentialsException.class);
+        verify(passwordEncoder).matches(PASSWORD, DUMMY_HASH);
+    }
+
+    @Test
+    void computesTheDummyHashOnlyOnce() {
+        when(loginUsersPort.findByEmail(EMAIL)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.loginUsers(request())).isInstanceOf(InvalidCredentialsException.class);
+        assertThatThrownBy(() -> service.loginUsers(request())).isInstanceOf(InvalidCredentialsException.class);
+        verify(passwordEncoder, times(1)).encode(any());
     }
 
     @Test

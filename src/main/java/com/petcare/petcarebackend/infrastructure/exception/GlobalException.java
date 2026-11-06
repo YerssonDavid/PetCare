@@ -1,6 +1,5 @@
 package com.petcare.petcarebackend.infrastructure.exception;
 
-import com.petcare.petcarebackend.application.exception.AccountNotFoundException;
 import com.petcare.petcarebackend.application.exception.DuplicateServiceRequestException;
 import com.petcare.petcarebackend.application.exception.InvalidCredentialsException;
 import com.petcare.petcarebackend.application.exception.InvalidRefreshTokenException;
@@ -138,11 +137,6 @@ public class GlobalException extends ResponseEntityExceptionHandler {
     @ExceptionHandler(InvalidRefreshTokenException.class)
     public ProblemDetail handleInvalidRefreshToken(InvalidRefreshTokenException ex) {
         return problem(HttpStatus.UNAUTHORIZED, "Sesión inválida", ex.getMessage());
-    }
-
-    @ExceptionHandler(AccountNotFoundException.class)
-    public ProblemDetail handleAccountNotFound(AccountNotFoundException ex) {
-        return problem(HttpStatus.NOT_FOUND, "Recurso no encontrado", ex.getMessage());
     }
 
     @ExceptionHandler(OwnerNotFoundException.class)

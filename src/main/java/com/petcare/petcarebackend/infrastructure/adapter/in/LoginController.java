@@ -39,9 +39,7 @@ public class LoginController {
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = LoginResponse.class)))
     @ApiResponse(responseCode = "400", description = "Datos ausentes o con formato inválido",
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
-    @ApiResponse(responseCode = "401", description = "Contraseña incorrecta o cuenta inactiva",
-            content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
-    @ApiResponse(responseCode = "404", description = "No existe una cuenta con ese correo",
+    @ApiResponse(responseCode = "401", description = "Correo o contraseña incorrectos, o cuenta inactiva",
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
     @ApiResponse(responseCode = "500", description = "Error interno",
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
