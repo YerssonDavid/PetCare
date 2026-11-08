@@ -1,7 +1,7 @@
 package com.petcare.petcarebackend.infrastructure.adapter.persistence;
 
 import com.petcare.petcarebackend.application.exception.PetAlreadyExistsException;
-import com.petcare.petcarebackend.application.port.out.PetRepositoryPort;
+import com.petcare.petcarebackend.application.port.out.pet.PetRepositoryPort;
 import com.petcare.petcarebackend.domain.entity.Pet;
 import com.petcare.petcarebackend.infrastructure.adapter.repository.OwnerRepository;
 import com.petcare.petcarebackend.infrastructure.adapter.repository.PetRepository;
@@ -13,6 +13,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
+import java.util.List;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -56,6 +58,19 @@ public class PetJpaAdapter implements PetRepositoryPort {
     @Override
     public boolean deleteByIdAndOwnerId(UUID petId, UUID ownerId) {
         return petRepository.deleteByIdAndOwnerId(petId, ownerId);
+    }
+
+    @Override
+    public List<Pet> findPetsByIdOwner(UUID ownerId) {
+        return petRepository.findByOwnerId(ownerId).stream()
+                .map(com.petcare.petcarebackend.infrastructure.mapper.PetMapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public Optional<Pet> findByIdForUpdate(UUID id) {
+        return petRepository.findByIdForUpdate(id)
+                .map(com.petcare.petcarebackend.infrastructure.mapper.PetMapper::toDomain);
     }
 
     private boolean isOwnerNameViolation(DataIntegrityViolationException ex) {
