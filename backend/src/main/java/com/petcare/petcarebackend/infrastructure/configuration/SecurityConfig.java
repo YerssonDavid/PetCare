@@ -29,6 +29,8 @@ public class SecurityConfig {
                         // TODO: require authentication once JWT exists; ownerId currently comes from the request body
                         .requestMatchers(HttpMethod.POST, "/registry/pet").permitAll()
                         .requestMatchers(HttpMethod.POST, "/registry/provider").permitAll()
+                        // Public catalog for the prototype; mutations remain protected.
+                        .requestMatchers(HttpMethod.GET, "/services", "/services/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
