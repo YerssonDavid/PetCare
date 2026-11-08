@@ -31,6 +31,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/registry/provider").permitAll()
                         // Public catalog for the prototype; mutations remain protected.
                         .requestMatchers(HttpMethod.GET, "/services", "/services/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/pets", "/service-requests/mine").permitAll()
                         .requestMatchers(HttpMethod.POST, "/service-requests").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .anyRequest().authenticated())
