@@ -8,11 +8,11 @@ public record CommercialName(String value) {
 
     public CommercialName {
         if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException("El nombre comercial es obligatorio");
+            throw new IllegalArgumentException("Commercial name is required");
         }
         value = value.trim().replaceAll("\\s+", " ");
         if (value.length() > MAX_LENGTH) {
-            throw new IllegalArgumentException("El nombre comercial no puede superar " + MAX_LENGTH + " caracteres");
+            throw new IllegalArgumentException("Commercial name must not exceed " + MAX_LENGTH + " characters");
         }
     }
 

@@ -17,5 +17,4 @@ public interface ProviderRepository extends JpaRepository<ProviderJpa, UUID> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select p from ProviderJpa p where p.id = :id")
     Optional<ProviderJpa> findByIdForUpdate(@Param("id") UUID id);
-    Optional<ProviderJpa> findByEmail(String email);
 }

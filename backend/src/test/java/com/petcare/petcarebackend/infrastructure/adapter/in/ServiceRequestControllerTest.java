@@ -56,7 +56,6 @@ class ServiceRequestControllerTest {
 
     private static final UUID ID = UUID.randomUUID();
     private static final UUID PROVIDER_ID = UUID.randomUUID();
-    private static final UUID OWNER_ID = UUID.randomUUID();
 
     @Mock
     private ServiceRequestRegistry serviceRequestRegistry;
@@ -90,18 +89,18 @@ class ServiceRequestControllerTest {
     private ResultActions postRequest(String purchaseType) throws Exception {
         String body = """
                 {
+                  "ownerId": "%s",
                   "petId": "%s",
                   "slotId": "%s",
                   "purchaseType": %s
                 }
-                """.formatted(UUID.randomUUID(), UUID.randomUUID(), purchaseType);
-        return mockMvc.perform(post("/service-requests").principal(OWNER_ID::toString)
-                .contentType(MediaType.APPLICATION_JSON).content(body));
+                """.formatted(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), purchaseType);
+        return mockMvc.perform(post("/service-requests").contentType(MediaType.APPLICATION_JSON).content(body));
     }
 
     @Test
     void createsRequestAndReturnsConfirmation() throws Exception {
-        when(serviceRequestRegistry.createServiceRequest(eq(OWNER_ID), any())).thenReturn(new ServiceRequestResponse(
+        when(serviceRequestRegistry.createServiceRequest(any())).thenReturn(new ServiceRequestResponse(
                 ID, "Firulais", "Baño completo", OfferingType.SERVICIO, "Vet Sol",
                 LocalDate.of(2026, 11, 11), LocalTime.of(10, 0), LocalTime.of(11, 0),
                 new BigDecimal("45000.00"), RequestStatus.PENDIENTE, null, null, LocalDateTime.of(2026, 11, 10, 8, 0)));
@@ -121,18 +120,18 @@ class ServiceRequestControllerTest {
     void rejectsMissingFields() throws Exception {
         mockMvc.perform(post("/service-requests").contentType(MediaType.APPLICATION_JSON).content("{}"))
                 .andExpect(status().isBadRequest());
-        verify(serviceRequestRegistry, never()).createServiceRequest(any(), any());
+        verify(serviceRequestRegistry, never()).createServiceRequest(any());
     }
 
     @Test
     void rejectsUnknownPurchaseType() throws Exception {
         postRequest("\"REGALO\"").andExpect(status().isBadRequest());
-        verify(serviceRequestRegistry, never()).createServiceRequest(any(), any());
+        verify(serviceRequestRegistry, never()).createServiceRequest(any());
     }
 
     @Test
     void returnsBadRequestWhenPurchaseTypeDoesNotApply() throws Exception {
-        when(serviceRequestRegistry.createServiceRequest(eq(OWNER_ID), any()))
+        when(serviceRequestRegistry.createServiceRequest(any()))
                 .thenThrow(new IllegalArgumentException("Purchase type only applies to products"));
 
         postRequest("\"RETIRO\"").andExpect(status().isBadRequest());
@@ -140,35 +139,35 @@ class ServiceRequestControllerTest {
 
     @Test
     void returnsForbiddenForPetOfAnotherOwner() throws Exception {
-        when(serviceRequestRegistry.createServiceRequest(eq(OWNER_ID), any())).thenThrow(new PetNotOwnedException());
+        when(serviceRequestRegistry.createServiceRequest(any())).thenThrow(new PetNotOwnedException());
 
         postRequest("null").andExpect(status().isForbidden());
     }
 
     @Test
     void returnsNotFoundForUnknownPet() throws Exception {
-        when(serviceRequestRegistry.createServiceRequest(eq(OWNER_ID), any())).thenThrow(new PetNotFoundException(ID));
+        when(serviceRequestRegistry.createServiceRequest(any())).thenThrow(new PetNotFoundException(ID));
 
         postRequest("null").andExpect(status().isNotFound());
     }
 
     @Test
     void returnsNotFoundForUnknownSlot() throws Exception {
-        when(serviceRequestRegistry.createServiceRequest(eq(OWNER_ID), any())).thenThrow(new TimeSlotNotFoundException(ID));
+        when(serviceRequestRegistry.createServiceRequest(any())).thenThrow(new TimeSlotNotFoundException(ID));
 
         postRequest("null").andExpect(status().isNotFound());
     }
 
     @Test
     void returnsConflictForUnavailableSlot() throws Exception {
-        when(serviceRequestRegistry.createServiceRequest(eq(OWNER_ID), any())).thenThrow(new TimeSlotUnavailableException("occupied"));
+        when(serviceRequestRegistry.createServiceRequest(any())).thenThrow(new TimeSlotUnavailableException("occupied"));
 
         postRequest("null").andExpect(status().isConflict());
     }
 
     @Test
     void returnsConflictForDuplicateRequest() throws Exception {
-        when(serviceRequestRegistry.createServiceRequest(eq(OWNER_ID), any())).thenThrow(new DuplicateServiceRequestException("duplicate"));
+        when(serviceRequestRegistry.createServiceRequest(any())).thenThrow(new DuplicateServiceRequestException());
 
         postRequest("null").andExpect(status().isConflict());
     }
@@ -181,20 +180,27 @@ class ServiceRequestControllerTest {
     }
 
     private ResultActions patchAccept() throws Exception {
-        return mockMvc.perform(patch("/service-requests/{id}/accept", ID).principal(PROVIDER_ID::toString));
+        return mockMvc.perform(patch("/service-requests/{id}/accept", ID).contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        { "providerId": "%s" }
+                        """.formatted(PROVIDER_ID)));
     }
 
     private ResultActions patchReject(String reason) throws Exception {
-        return mockMvc.perform(patch("/service-requests/{id}/reject", ID).principal(PROVIDER_ID::toString)
-                .contentType(MediaType.APPLICATION_JSON)
+        return mockMvc.perform(patch("/service-requests/{id}/reject", ID).contentType(MediaType.APPLICATION_JSON)
                 .content("""
-                        { "reason": %s }
-                        """.formatted(reason)));
+                        { "providerId": "%s", "reason": %s }
+                        """.formatted(PROVIDER_ID, reason)));
+    }
+
+    private ResultActions patchCancel(UUID ownerId) throws Exception {
+        return mockMvc.perform(patch("/service-requests/{id}/cancel", ID)
+                .param("ownerId", ownerId.toString()));
     }
 
     @Test
     void acceptsRequestAndReturnsConfirmation() throws Exception {
-        when(serviceRequestAnswerRegistry.acceptServiceRequest(ID, PROVIDER_ID))
+        when(serviceRequestAnswerRegistry.acceptServiceRequest(eq(ID), any()))
                 .thenReturn(answered(RequestStatus.ACEPTADO, null));
 
         patchAccept()
@@ -204,8 +210,15 @@ class ServiceRequestControllerTest {
     }
 
     @Test
+    void acceptRequiresProviderId() throws Exception {
+        mockMvc.perform(patch("/service-requests/{id}/accept", ID).contentType(MediaType.APPLICATION_JSON).content("{}"))
+                .andExpect(status().isBadRequest());
+        verify(serviceRequestAnswerRegistry, never()).acceptServiceRequest(any(), any());
+    }
+
+    @Test
     void rejectsRequestAndReturnsTheReason() throws Exception {
-        when(serviceRequestAnswerRegistry.rejectServiceRequest(eq(ID), eq(PROVIDER_ID), any()))
+        when(serviceRequestAnswerRegistry.rejectServiceRequest(eq(ID), any()))
                 .thenReturn(answered(RequestStatus.RECHAZADO, "Sin disponibilidad"));
 
         patchReject("\"Sin disponibilidad\"")
@@ -218,25 +231,25 @@ class ServiceRequestControllerTest {
     void rejectRequiresAReason() throws Exception {
         patchReject("null").andExpect(status().isBadRequest());
         patchReject("\"   \"").andExpect(status().isBadRequest());
-        verify(serviceRequestAnswerRegistry, never()).rejectServiceRequest(any(), any(), any());
+        verify(serviceRequestAnswerRegistry, never()).rejectServiceRequest(any(), any());
     }
 
     @Test
     void rejectLimitsTheLengthOfTheReason() throws Exception {
         patchReject("\"" + "a".repeat(501) + "\"").andExpect(status().isBadRequest());
-        verify(serviceRequestAnswerRegistry, never()).rejectServiceRequest(any(), any(), any());
+        verify(serviceRequestAnswerRegistry, never()).rejectServiceRequest(any(), any());
     }
 
     @Test
     void returnsConflictWhenAlreadyAnswered() throws Exception {
-        when(serviceRequestAnswerRegistry.acceptServiceRequest(ID, PROVIDER_ID)).thenThrow(new RequestNotPendingException());
+        when(serviceRequestAnswerRegistry.acceptServiceRequest(eq(ID), any())).thenThrow(new RequestNotPendingException());
 
         patchAccept().andExpect(status().isConflict());
     }
 
     @Test
     void returnsConflictWhenAcceptingAfterTheSlotStarted() throws Exception {
-        when(serviceRequestAnswerRegistry.acceptServiceRequest(ID, PROVIDER_ID))
+        when(serviceRequestAnswerRegistry.acceptServiceRequest(eq(ID), any()))
                 .thenThrow(new TimeSlotUnavailableException("started"));
 
         patchAccept().andExpect(status().isConflict());
@@ -244,14 +257,14 @@ class ServiceRequestControllerTest {
 
     @Test
     void returnsForbiddenForRequestOfAnotherProvider() throws Exception {
-        when(serviceRequestAnswerRegistry.rejectServiceRequest(eq(ID), eq(PROVIDER_ID), any())).thenThrow(new NotRequestProviderException());
+        when(serviceRequestAnswerRegistry.rejectServiceRequest(eq(ID), any())).thenThrow(new NotRequestProviderException());
 
         patchReject("\"motivo\"").andExpect(status().isForbidden());
     }
 
     @Test
     void returnsNotFoundForUnknownRequest() throws Exception {
-        when(serviceRequestAnswerRegistry.acceptServiceRequest(ID, PROVIDER_ID)).thenThrow(new ServiceRequestNotFoundException(ID));
+        when(serviceRequestAnswerRegistry.acceptServiceRequest(eq(ID), any())).thenThrow(new ServiceRequestNotFoundException(ID));
 
         patchAccept().andExpect(status().isNotFound());
     }
@@ -265,7 +278,7 @@ class ServiceRequestControllerTest {
                         new BigDecimal("45000.00"), RequestStatus.PENDIENTE, null, null, LocalDateTime.of(2026, 11, 10, 8, 0))));
 
         mockMvc.perform(get("/service-requests/received")
-                        .principal(PROVIDER_ID::toString)
+                        .param("providerId", PROVIDER_ID.toString())
                         .param("status", "PENDIENTE"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(ID.toString()))
@@ -280,7 +293,7 @@ class ServiceRequestControllerTest {
     void statusFilterIsOptional() throws Exception {
         when(receivedServiceRequestQuery.listReceivedServiceRequests(PROVIDER_ID, null)).thenReturn(List.of());
 
-        mockMvc.perform(get("/service-requests/received").principal(PROVIDER_ID::toString))
+        mockMvc.perform(get("/service-requests/received").param("providerId", PROVIDER_ID.toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isEmpty());
     }
@@ -288,10 +301,15 @@ class ServiceRequestControllerTest {
     @Test
     void rejectsUnknownStatusFilter() throws Exception {
         mockMvc.perform(get("/service-requests/received")
-                        .principal(PROVIDER_ID::toString)
+                        .param("providerId", PROVIDER_ID.toString())
                         .param("status", "CANCELADO"))
                 .andExpect(status().isBadRequest());
         verify(receivedServiceRequestQuery, never()).listReceivedServiceRequests(any(), any());
+    }
+
+    @Test
+    void receivedRequiresProviderId() throws Exception {
+        mockMvc.perform(get("/service-requests/received")).andExpect(status().isBadRequest());
     }
 
     @Test
@@ -302,11 +320,16 @@ class ServiceRequestControllerTest {
                         "Baño completo", "Baño y secado", OfferingType.SERVICIO, LocalDate.of(2026, 11, 9), LocalTime.of(10, 0), LocalTime.of(11, 0),
                         new BigDecimal("45000.00"), RequestStatus.ACEPTADO, null, null, LocalDateTime.of(2026, 11, 8, 8, 0))));
 
-        mockMvc.perform(get("/service-requests/provided").principal(PROVIDER_ID::toString))
+        mockMvc.perform(get("/service-requests/provided").param("providerId", PROVIDER_ID.toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].offeringDescription").value("Baño y secado"))
                 .andExpect(jsonPath("$[0].pet.name").value("Firulais"))
                 .andExpect(jsonPath("$[0].status").value("ACEPTADO"));
+    }
+
+    @Test
+    void providedRequiresProviderId() throws Exception {
+        mockMvc.perform(get("/service-requests/provided")).andExpect(status().isBadRequest());
     }
 
     @Test
@@ -315,11 +338,53 @@ class ServiceRequestControllerTest {
         when(ownerServiceRequestQuery.listOwnerServiceRequests(ownerId))
                 .thenReturn(List.of(answered(RequestStatus.RECHAZADO, "Sin disponibilidad")));
 
-        mockMvc.perform(get("/service-requests/mine").principal(ownerId::toString))
+        mockMvc.perform(get("/service-requests/mine").param("ownerId", ownerId.toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(ID.toString()))
                 .andExpect(jsonPath("$[0].status").value("RECHAZADO"))
                 .andExpect(jsonPath("$[0].requestedAt").exists());
+    }
+
+    @Test
+    void mineRequiresOwnerId() throws Exception {
+        mockMvc.perform(get("/service-requests/mine"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value("El parámetro ownerId es obligatorio"));
+    }
+
+    @Test
+    void cancelsRequestAndReturnsConfirmation() throws Exception {
+        when(serviceRequestAnswerRegistry.cancelServiceRequest(ID, PROVIDER_ID))
+                .thenReturn(answered(RequestStatus.CANCELADA, null));
+
+        patchCancel(PROVIDER_ID)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(ID.toString()))
+                .andExpect(jsonPath("$.status").value("CANCELADA"));
+    }
+
+    @Test
+    void cancelRequiresOwnerId() throws Exception {
+        mockMvc.perform(patch("/service-requests/{id}/cancel", ID))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value("El parámetro ownerId es obligatorio"));
+        verify(serviceRequestAnswerRegistry, never()).cancelServiceRequest(any(), any());
+    }
+
+    @Test
+    void cancellationReturnsForbiddenForAnotherOwner() throws Exception {
+        when(serviceRequestAnswerRegistry.cancelServiceRequest(ID, PROVIDER_ID))
+                .thenThrow(new NotRequestParticipantException());
+
+        patchCancel(PROVIDER_ID).andExpect(status().isForbidden());
+    }
+
+    @Test
+    void cancellationReturnsConflictWhenRequestIsNotPending() throws Exception {
+        when(serviceRequestAnswerRegistry.cancelServiceRequest(ID, PROVIDER_ID))
+                .thenThrow(new RequestNotPendingException());
+
+        patchCancel(PROVIDER_ID).andExpect(status().isConflict());
     }
 
     @Test
@@ -332,7 +397,7 @@ class ServiceRequestControllerTest {
                         List.of(new ServiceRequestHistoryResponse.Entry(
                                 RequestStatus.RECHAZADO, "Sin disponibilidad", LocalDateTime.of(2026, 11, 10, 8, 0)))));
 
-        mockMvc.perform(get("/service-requests/{id}/history", ID).principal(accountId::toString))
+        mockMvc.perform(get("/service-requests/{id}/history", ID).param("accountId", accountId.toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.offeringDescription").value("Baño y secado"))
                 .andExpect(jsonPath("$.pet.name").value("Firulais"))
@@ -341,12 +406,17 @@ class ServiceRequestControllerTest {
     }
 
     @Test
+    void historyRequiresAccountId() throws Exception {
+        mockMvc.perform(get("/service-requests/{id}/history", ID)).andExpect(status().isBadRequest());
+    }
+
+    @Test
     void historyReturnsForbiddenForOtherAccounts() throws Exception {
         UUID accountId = UUID.randomUUID();
         when(serviceRequestHistoryQuery.getServiceRequestHistory(ID, accountId))
                 .thenThrow(new NotRequestParticipantException());
 
-        mockMvc.perform(get("/service-requests/{id}/history", ID).principal(accountId::toString))
+        mockMvc.perform(get("/service-requests/{id}/history", ID).param("accountId", accountId.toString()))
                 .andExpect(status().isForbidden());
     }
 
@@ -356,7 +426,7 @@ class ServiceRequestControllerTest {
         when(serviceRequestHistoryQuery.getServiceRequestHistory(ID, accountId))
                 .thenThrow(new ServiceRequestNotFoundException(ID));
 
-        mockMvc.perform(get("/service-requests/{id}/history", ID).principal(accountId::toString))
+        mockMvc.perform(get("/service-requests/{id}/history", ID).param("accountId", accountId.toString()))
                 .andExpect(status().isNotFound());
     }
 }

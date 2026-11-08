@@ -45,7 +45,12 @@ public interface ServiceRequestRepository extends JpaRepository<ServiceRequestJp
     List<ServiceRequestJpa> findByProviderIdAndStatusInOrderByRequestedAtDesc(UUID providerId, Collection<RequestStatus> statuses);
 
     @EntityGraph(attributePaths = {"owner", "pet", "offering", "provider", "slot"})
-    List<ServiceRequestJpa> findByOwnerIdOrderByRequestedAtDesc(UUID ownerId);
+    @Query("""
+            select r from ServiceRequestJpa r
+            where r.owner.id = :ownerId
+            order by r.slot.slotDate desc, r.slot.startTime desc, r.requestedAt desc
+            """)
+    List<ServiceRequestJpa> findByOwnerIdOrderBySlotDesc(@Param("ownerId") UUID ownerId);
 
     @EntityGraph(attributePaths = {"owner", "pet", "offering", "provider", "slot"})
     @Query("""

@@ -7,15 +7,14 @@ import com.petcare.petcarebackend.infrastructure.adapter.repository.OwnerReposit
 import com.petcare.petcarebackend.infrastructure.adapter.repository.PetRepository;
 import com.petcare.petcarebackend.infrastructure.entity.OwnerJpa;
 import com.petcare.petcarebackend.infrastructure.entity.PetJpa;
-import com.petcare.petcarebackend.infrastructure.mapper.PetMapper;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -30,7 +29,15 @@ public class PetJpaAdapter implements PetRepositoryPort {
         // Proxy without SELECT: the use case already verified the owner exists
         OwnerJpa owner = ownerRepository.getReferenceById(pet.getOwnerId());
 
-        PetJpa petJpa = PetMapper.toJpa(pet, owner);
+        PetJpa petJpa = new PetJpa(
+                pet.getId(),
+                owner,
+                pet.getName().value(),
+                pet.getName().normalized(),
+                pet.getTypePet(),
+                pet.getAge(),
+                pet.getDescription()
+        );
 
         try {
             // Flush now so a concurrent duplicate surfaces here, even inside a wider transaction
@@ -49,15 +56,21 @@ public class PetJpaAdapter implements PetRepositoryPort {
     }
 
     @Override
+    public boolean deleteByIdAndOwnerId(UUID petId, UUID ownerId) {
+        return petRepository.deleteByIdAndOwnerId(petId, ownerId) > 0;
+    }
+
+    @Override
     public List<Pet> findPetsByIdOwner(UUID ownerId) {
         return petRepository.findByOwnerId(ownerId).stream()
-                .map(PetMapper::toDomain)
+                .map(com.petcare.petcarebackend.infrastructure.mapper.PetMapper::toDomain)
                 .toList();
     }
 
     @Override
     public Optional<Pet> findByIdForUpdate(UUID id) {
-        return petRepository.findByIdForUpdate(id).map(PetMapper::toDomain);
+        return petRepository.findByIdForUpdate(id)
+                .map(com.petcare.petcarebackend.infrastructure.mapper.PetMapper::toDomain);
     }
 
     private boolean isOwnerNameViolation(DataIntegrityViolationException ex) {

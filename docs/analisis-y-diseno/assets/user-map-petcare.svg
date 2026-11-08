@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620">
+  <rect width="1200" height="620" fill="white"/>
+  <text x="60" y="62" font-family="Arial" font-size="28" font-weight="700" fill="#111827">User Map del propietario</text>
+  <text x="60" y="96" font-family="Arial" font-size="16" fill="#4b5563">Recorrido desde la necesidad hasta el seguimiento de la solicitud</text>
+  <g font-family="Arial" font-size="17" fill="#111827">
+    <rect x="60" y="150" width="200" height="250" rx="12" fill="#e8f1fb" stroke="#2f5597" stroke-width="2"/>
+    <rect x="290" y="150" width="200" height="250" rx="12" fill="#e8f1fb" stroke="#2f5597" stroke-width="2"/>
+    <rect x="520" y="150" width="200" height="250" rx="12" fill="#e8f1fb" stroke="#2f5597" stroke-width="2"/>
+    <rect x="750" y="150" width="200" height="250" rx="12" fill="#e8f1fb" stroke="#2f5597" stroke-width="2"/>
+    <rect x="980" y="150" width="160" height="250" rx="12" fill="#e8f1fb" stroke="#2f5597" stroke-width="2"/>
+    <text x="80" y="190" font-weight="700">1. Identificar</text><text x="80" y="222">Define el servicio</text><text x="80" y="250">y las necesidades</text><text x="80" y="278">de su mascota.</text>
+    <text x="310" y="190" font-weight="700">2. Buscar</text><text x="310" y="222">Consulta categorías</text><text x="310" y="250">y opciones en</text><text x="310" y="278">PetCare.</text>
+    <text x="540" y="190" font-weight="700">3. Comparar</text><text x="540" y="222">Revisa experiencia,</text><text x="540" y="250">reseñas y</text><text x="540" y="278">disponibilidad.</text>
+    <text x="770" y="190" font-weight="700">4. Solicitar</text><text x="770" y="222">Selecciona mascota,</text><text x="770" y="250">fecha y hora, y</text><text x="770" y="278">envía la solicitud.</text>
+    <text x="1000" y="190" font-weight="700">5. Seguir</text><text x="1000" y="222">Consulta estado</text><text x="1000" y="250">e historial.</text>
+  </g>
+  <g stroke="#2f5597" stroke-width="3" fill="none"><path d="M260 275h30M490 275h30M720 275h30M950 275h30"/><path d="M280 265l10 10-10 10M510 265l10 10-10 10M740 265l10 10-10 10M970 265l10 10-10 10"/></g>
+  <text x="60" y="500" font-family="Arial" font-size="16" fill="#4b5563">Nota. Elaboración propia a partir de las entrevistas del proyecto PetCare.</text>
+</svg>

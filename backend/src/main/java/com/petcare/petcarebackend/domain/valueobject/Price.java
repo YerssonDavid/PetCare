@@ -10,16 +10,16 @@ public record Price(BigDecimal value) {
 
     public Price {
         if (value == null) {
-            throw new IllegalArgumentException("El precio es obligatorio");
+            throw new IllegalArgumentException("Price is required");
         }
         if (value.signum() < 0) {
-            throw new IllegalArgumentException("El precio no puede ser negativo");
+            throw new IllegalArgumentException("Price must not be negative");
         }
         if (value.stripTrailingZeros().scale() > MAX_DECIMALS) {
-            throw new IllegalArgumentException("El precio no puede tener más de " + MAX_DECIMALS + " decimales");
+            throw new IllegalArgumentException("Price must not have more than " + MAX_DECIMALS + " decimals");
         }
         if (value.compareTo(MAX_VALUE) > 0) {
-            throw new IllegalArgumentException("El precio no puede superar " + MAX_VALUE);
+            throw new IllegalArgumentException("Price must not exceed " + MAX_VALUE);
         }
         // Same scale as the database column, so 45000 and 45000.00 are the same price
         value = value.setScale(MAX_DECIMALS, RoundingMode.UNNECESSARY);

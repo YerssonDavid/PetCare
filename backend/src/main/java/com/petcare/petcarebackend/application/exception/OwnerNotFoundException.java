@@ -4,6 +4,6 @@ import java.util.UUID;
 
 public class OwnerNotFoundException extends RuntimeException {
     public OwnerNotFoundException(UUID ownerId) {
-        super("Propietario no encontrado: " + ownerId);
+        super("Owner not found: " + ownerId);
     }
 }

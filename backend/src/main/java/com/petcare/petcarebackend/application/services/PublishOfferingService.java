@@ -17,7 +17,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -27,15 +26,15 @@ public class PublishOfferingService implements OfferingRegistry {
     private final ProviderRepositoryPort providerRepository;
 
     @Override
-    public RegisterResponse publishOffering(UUID providerId, PublishOfferingRequest request) {
+    public RegisterResponse publishOffering(PublishOfferingRequest request) {
         OfferingName name = new OfferingName(request.name());
         Price price = new Price(request.price());
 
-        Provider provider = providerRepository.findById(providerId)
-                .orElseThrow(() -> new ProviderNotFoundException(providerId));
+        Provider provider = providerRepository.findById(request.providerId())
+                .orElseThrow(() -> new ProviderNotFoundException(request.providerId()));
 
         if (provider.getRole() != Role.PROVIDER) {
-            throw new RoleNotAllowedException("Solo los proveedores pueden publicar servicios");
+            throw new RoleNotAllowedException("Only providers can publish services");
         }
 
         if (offeringRepository.existsByProviderIdAndNormalizedName(provider.getId(), name.normalized())) {

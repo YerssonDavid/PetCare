@@ -30,7 +30,7 @@ public class ListProvidedServiceRequestsService implements ProvidedServiceReques
                 .orElseThrow(() -> new ProviderNotFoundException(providerId));
 
         if (provider.getRole() != Role.PROVIDER) {
-            throw new RoleNotAllowedException("Solo los proveedores pueden consultar los servicios prestados");
+            throw new RoleNotAllowedException("Only providers can list provided requests");
         }
 
         return serviceRequestRepository.findAcceptedServiceDetailsStartedBy(providerId, LocalDateTime.now(clock)).stream()

@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +18,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.security.Principal;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/registry")
@@ -33,7 +33,6 @@ public class RegistryController {
     private final ProviderRegistry providerRegistry;
 
     @PostMapping("/owner")
-    @SecurityRequirements
     @Operation(
             summary = "Registrar propietario",
             description = "Crea una cuenta de propietario de mascotas con rol USER. No requiere autenticación."
@@ -54,15 +53,11 @@ public class RegistryController {
     @PostMapping("/pet")
     @Operation(
             summary = "Registrar mascota",
-            description = "Registra una mascota del propietario autenticado; requiere el rol USER."
+            description = "Registra una mascota para un propietario existente. Temporalmente no requiere autenticación hasta implementar JWT."
     )
     @ApiResponse(responseCode = "201", description = "Mascota registrada; devuelve el id generado",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = RegisterResponse.class)))
     @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos",
-            content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
-    @ApiResponse(responseCode = "401", description = "Token ausente, inválido o expirado",
-            content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
-    @ApiResponse(responseCode = "403", description = "La cuenta no tiene el rol USER",
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
     @ApiResponse(responseCode = "404", description = "Propietario inexistente",
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
@@ -70,13 +65,12 @@ public class RegistryController {
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
     @ApiResponse(responseCode = "500", description = "Error interno",
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
-    public ResponseEntity<RegisterResponse> registryPet(@Valid @RequestBody RegisterPetRequest register, Principal principal) {
-        RegisterResponse response = petRegistry.registerPet(CurrentAccount.idOf(principal), register);
+    public ResponseEntity<RegisterResponse> registryPet(@Valid @RequestBody RegisterPetRequest register) {
+        RegisterResponse response = petRegistry.registerPet(register);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/provider")
-    @SecurityRequirements
     @Operation(
             summary = "Registrar proveedor",
             description = "Crea una cuenta de proveedor de servicios con rol PROVIDER. No requiere autenticación."
@@ -92,5 +86,13 @@ public class RegistryController {
     public ResponseEntity<RegisterResponse> registryProvider(@Valid @RequestBody RegisterProviderRequest register) {
         RegisterResponse response = providerRegistry.registerProvider(register);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @DeleteMapping("/pet")
+    @Operation(summary = "Eliminar mascota", description = "Elimina una mascota del propietario indicado.")
+    public ResponseEntity<Void> deletePet(@RequestParam UUID petId, @RequestParam UUID ownerId) {
+        return petRegistry.deletePet(petId, ownerId)
+                ? ResponseEntity.noContent().build()
+                : ResponseEntity.notFound().build();
     }
 }

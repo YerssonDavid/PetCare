@@ -4,6 +4,6 @@ import java.util.UUID;
 
 public class OfferingNotFoundException extends RuntimeException {
     public OfferingNotFoundException(UUID offeringId) {
-        super("Servicio o producto no encontrado: " + offeringId);
+        super("Service or product not found: " + offeringId);
     }
 }

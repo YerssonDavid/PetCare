@@ -45,7 +45,7 @@ class PublishOfferingServiceTest {
     private PublishOfferingService service;
 
     private PublishOfferingRequest request(String price) {
-        return new PublishOfferingRequest("Baño completo", "Baño y secado", "Vacunas al día",
+        return new PublishOfferingRequest(PROVIDER_ID, "Baño completo", "Baño y secado", "Vacunas al día",
                 new BigDecimal(price), OfferingCategory.PELUQUERIA, OfferingType.SERVICIO);
     }
 
@@ -61,7 +61,7 @@ class PublishOfferingServiceTest {
         when(providerRepository.findById(PROVIDER_ID)).thenReturn(Optional.of(providerWithRole(Role.PROVIDER)));
         when(offeringRepository.existsByProviderIdAndNormalizedName(PROVIDER_ID, "baño completo")).thenReturn(false);
 
-        RegisterResponse response = service.publishOffering(PROVIDER_ID, request("45000"));
+        RegisterResponse response = service.publishOffering(request("45000"));
 
         ArgumentCaptor<Offering> saved = ArgumentCaptor.forClass(Offering.class);
         verify(offeringRepository).saveOffering(saved.capture());
@@ -82,7 +82,7 @@ class PublishOfferingServiceTest {
         when(providerRepository.findById(PROVIDER_ID)).thenReturn(Optional.of(providerWithRole(Role.PROVIDER)));
         when(offeringRepository.existsByProviderIdAndNormalizedName(PROVIDER_ID, "baño completo")).thenReturn(true);
 
-        assertThatThrownBy(() -> service.publishOffering(PROVIDER_ID, request("45000")))
+        assertThatThrownBy(() -> service.publishOffering(request("45000")))
                 .isInstanceOf(OfferingAlreadyExistsException.class);
         verify(offeringRepository, never()).saveOffering(any());
     }
@@ -91,7 +91,7 @@ class PublishOfferingServiceTest {
     void rejectsUnknownProvider() {
         when(providerRepository.findById(PROVIDER_ID)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.publishOffering(PROVIDER_ID, request("45000")))
+        assertThatThrownBy(() -> service.publishOffering(request("45000")))
                 .isInstanceOf(ProviderNotFoundException.class);
         verify(offeringRepository, never()).saveOffering(any());
     }
@@ -100,14 +100,14 @@ class PublishOfferingServiceTest {
     void rejectsAccountWithoutProviderRole() {
         when(providerRepository.findById(PROVIDER_ID)).thenReturn(Optional.of(providerWithRole(Role.USER)));
 
-        assertThatThrownBy(() -> service.publishOffering(PROVIDER_ID, request("45000")))
+        assertThatThrownBy(() -> service.publishOffering(request("45000")))
                 .isInstanceOf(RoleNotAllowedException.class);
         verify(offeringRepository, never()).saveOffering(any());
     }
 
     @Test
     void rejectsInvalidPriceBeforeTouchingRepository() {
-        assertThatThrownBy(() -> service.publishOffering(PROVIDER_ID, request("-1")))
+        assertThatThrownBy(() -> service.publishOffering(request("-1")))
                 .isInstanceOf(IllegalArgumentException.class);
         verify(providerRepository, never()).findById(any());
         verify(offeringRepository, never()).saveOffering(any());

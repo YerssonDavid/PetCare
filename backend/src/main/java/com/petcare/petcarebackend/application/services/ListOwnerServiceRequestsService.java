@@ -27,7 +27,7 @@ public class ListOwnerServiceRequestsService implements OwnerServiceRequestQuery
                 .orElseThrow(() -> new OwnerNotFoundException(ownerId));
 
         if (owner.getRole() != Role.USER) {
-            throw new RoleNotAllowedException("Solo los propietarios pueden consultar sus solicitudes");
+            throw new RoleNotAllowedException("Only owners can list their requests");
         }
 
         return serviceRequestRepository.findDetailsByOwner(ownerId).stream()

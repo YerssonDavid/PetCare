@@ -10,4 +10,5 @@ public interface OwnerRepositoryPort {
     boolean existsByEmail(String email);
     boolean existsById(UUID id);
     Optional<Owner> findById(UUID id);
+    Optional<Owner> findByEmail(String email);
 }

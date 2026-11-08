@@ -8,11 +8,11 @@ public record OfferingName(String value) {
 
     public OfferingName {
         if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException("El nombre del servicio es obligatorio");
+            throw new IllegalArgumentException("Service name is required");
         }
         value = value.trim().replaceAll("\\s+", " ");
         if (value.length() > MAX_LENGTH) {
-            throw new IllegalArgumentException("El nombre del servicio no puede superar " + MAX_LENGTH + " caracteres");
+            throw new IllegalArgumentException("Service name must not exceed " + MAX_LENGTH + " characters");
         }
     }
 
