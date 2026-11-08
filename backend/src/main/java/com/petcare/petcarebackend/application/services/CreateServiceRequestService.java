@@ -56,7 +56,7 @@ public class CreateServiceRequestService implements ServiceRequestRegistry {
                 .orElseThrow(() -> new OwnerNotFoundException(request.ownerId()));
 
         if (owner.getRole() != Role.USER) {
-            throw new RoleNotAllowedException("Only owners can request services");
+            throw new RoleNotAllowedException("El propietario no tiene permiso para solicitar servicios");
         }
 
         // The lock makes concurrent requests of one pet run one at a time, so two overlapping
@@ -73,7 +73,7 @@ public class CreateServiceRequestService implements ServiceRequestRegistry {
 
         LocalDateTime now = LocalDateTime.now(clock);
         if (slot.hasStarted(now)) {
-            throw new TimeSlotUnavailableException("The time slot has already started");
+            throw new TimeSlotUnavailableException("La franja ya no está disponible");
         }
 
         Offering offering = offeringRepository.findById(slot.getOfferingId())
@@ -90,7 +90,7 @@ public class CreateServiceRequestService implements ServiceRequestRegistry {
                 throw new DuplicateServiceRequestException();
             }
             if (!timeSlotRepository.occupyIfFree(slot.getId())) {
-                throw new TimeSlotUnavailableException("The time slot is already occupied");
+                throw new TimeSlotUnavailableException("La franja ya no está disponible");
             }
         } else if (serviceRequestRepository.existsActiveRequestForPetAndSlot(pet.getId(), slot.getId())) {
             // A slot belongs to one product, so this only stops repeating the same product;

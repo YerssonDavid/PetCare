@@ -4,6 +4,8 @@ import com.petcare.petcarebackend.domain.enums.OfferingType;
 import com.petcare.petcarebackend.domain.enums.SlotStatus;
 import com.petcare.petcarebackend.infrastructure.entity.TimeSlotJpa;
 import org.springframework.data.jpa.repository.JpaRepository;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,6 +18,10 @@ import java.util.UUID;
 
 @Repository
 public interface TimeSlotRepository extends JpaRepository<TimeSlotJpa, UUID> {
+
+    @Override
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    java.util.Optional<TimeSlotJpa> findById(UUID id);
 
     // Conditional update: the database decides the winner when several requests target one slot
     @Modifying(clearAutomatically = true)
