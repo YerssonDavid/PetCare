@@ -8,11 +8,11 @@ public record PetName(String value) {
 
     public PetName {
         if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException("El nombre de la mascota es obligatorio");
+            throw new IllegalArgumentException("Pet name is required");
         }
         value = value.trim().replaceAll("\\s+", " ");
         if (value.length() > MAX_LENGTH) {
-            throw new IllegalArgumentException("El nombre de la mascota no puede superar " + MAX_LENGTH + " caracteres");
+            throw new IllegalArgumentException("Pet name must not exceed " + MAX_LENGTH + " characters");
         }
     }
 

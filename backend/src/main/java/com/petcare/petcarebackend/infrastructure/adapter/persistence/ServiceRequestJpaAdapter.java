@@ -80,7 +80,7 @@ public class ServiceRequestJpaAdapter implements ServiceRequestRepositoryPort {
 
     @Override
     public List<ServiceRequestDetails> findDetailsByOwner(UUID ownerId) {
-        return serviceRequestRepository.findByOwnerIdOrderByRequestedAtDesc(ownerId).stream()
+        return serviceRequestRepository.findByOwnerIdOrderBySlotDesc(ownerId).stream()
                 .map(this::toDetails)
                 .toList();
     }

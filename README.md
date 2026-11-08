@@ -18,11 +18,14 @@ Proyecto académico de la asignatura Análisis y Diseño de Sistemas.
 - Registro real de propietarios en PostgreSQL.
 - Registro y eliminación de mascotas.
 - Panel principal responsive con logo y navegación.
-- Pantallas preparadas para servicios, solicitudes e historial.
+- Catálogo de servicios con detalle y franjas disponibles.
+- Creación de solicitudes con validación de propietario, mascota, franja y duplicados.
+- Historial de solicitudes ordenado por fecha y hora.
+- Cancelación de solicitudes pendientes con liberación de la franja.
 - Integración coordinada con Podman Compose.
 
 ## 🚧 Estado del proyecto
-> Prototipo funcional académico en evolución. El flujo de propietarios y mascotas está conectado al backend; autenticación JWT, catálogo de servicios, reservas e historial quedan como próximos incrementos del MVP.
+> Prototipo funcional académico en evolución. El flujo principal de propietario, mascota, servicios, solicitudes, historial y cancelación está conectado al backend. La autenticación JWT y las notificaciones quedan como trabajo futuro del MVP.
 
 ## 🛠️ Tecnologías
 - Frontend: HTML, CSS y JavaScript.
@@ -52,6 +55,24 @@ podman compose down
 El usuario demo puede entrar con `demo@petcare.test` y cualquier contraseña de mínimo cuatro caracteres. Para probar persistencia real, usar la opción **Crear cuenta**.
 
 Servicios: frontend `5173`, backend `8080`, PostgreSQL `5432`.
+
+### Flujo de demostración
+
+1. Crear una cuenta y registrar una mascota en **Mis mascotas**.
+2. En una sesión posterior, entrar con el correo y la contraseña desde **Iniciar sesión**.
+3. Entrar a **Servicios**, abrir un servicio y seleccionar una franja libre.
+4. Elegir la mascota y pulsar **Solicitar**. La solicitud queda en estado **Pendiente**.
+5. Entrar a **Solicitudes** para consultar fecha, hora, servicio, mascota y estado.
+6. Pulsar **Cancelar** y confirmar. La solicitud queda **Cancelada** y la franja vuelve a estar disponible.
+
+### API principal
+
+- `GET /services` y `GET /services/{id}`: catálogo y detalle.
+- `GET /services/{id}/slots/free`: franjas libres.
+- `POST /auth/login`: iniciar sesión y recuperar el propietario registrado.
+- `POST /service-requests`: crear una solicitud.
+- `GET /service-requests/mine?ownerId=...`: historial del propietario.
+- `PATCH /service-requests/{id}/cancel?ownerId=...`: cancelar una solicitud pendiente.
 
 La guía completa se encuentra en [docs/GUIA-ENTREGA.md](docs/GUIA-ENTREGA.md).
 

@@ -45,10 +45,10 @@ public class ServiceRequest {
     public static ServiceRequest create(UUID ownerId, UUID petId, Offering offering, TimeSlot slot,
                                         PurchaseType purchaseType, LocalDateTime now) {
         if (offering.getType() == OfferingType.PRODUCTO && purchaseType == null) {
-            throw new IllegalArgumentException("El tipo de compra es obligatorio para los productos");
+            throw new IllegalArgumentException("Purchase type is required for products");
         }
         if (offering.getType() == OfferingType.SERVICIO && purchaseType != null) {
-            throw new IllegalArgumentException("El tipo de compra solo aplica a los productos");
+            throw new IllegalArgumentException("Purchase type only applies to products");
         }
         return new ServiceRequest(UUID.randomUUID(), ownerId, petId, offering.getId(), offering.getProviderId(),
                 slot.getId(), offering.getPrice(), RequestStatus.PENDIENTE, purchaseType, null, now);
@@ -62,7 +62,7 @@ public class ServiceRequest {
     public void reject(String reason) {
         ensurePending();
         if (reason == null || reason.isBlank()) {
-            throw new IllegalArgumentException("El motivo de rechazo es obligatorio");
+            throw new IllegalArgumentException("Rejection reason is required");
         }
         this.status = RequestStatus.RECHAZADO;
         this.rejectionReason = reason.trim();

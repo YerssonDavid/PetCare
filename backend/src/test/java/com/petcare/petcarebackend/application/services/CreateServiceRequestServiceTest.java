@@ -108,7 +108,7 @@ class CreateServiceRequestServiceTest {
     }
 
     private CreateServiceRequestRequest request(PurchaseType purchaseType) {
-        return new CreateServiceRequestRequest(PET_ID, SLOT_ID, purchaseType);
+        return new CreateServiceRequestRequest(OWNER_ID, PET_ID, SLOT_ID, purchaseType);
     }
 
     private Owner owner(Role role) {
@@ -159,7 +159,7 @@ class CreateServiceRequestServiceTest {
         when(serviceRequestRepository.existsActiveServiceRequestOverlapping(PET_ID, DATE, TEN, ELEVEN)).thenReturn(false);
         when(timeSlotRepository.occupyIfFree(SLOT_ID)).thenReturn(true);
 
-        ServiceRequestResponse response = service.createServiceRequest(OWNER_ID, request(null));
+        ServiceRequestResponse response = service.createServiceRequest(request(null));
 
         ArgumentCaptor<ServiceRequest> savedRequest = ArgumentCaptor.forClass(ServiceRequest.class);
         ArgumentCaptor<ServiceRequestHistory> savedHistory = ArgumentCaptor.forClass(ServiceRequestHistory.class);
@@ -196,7 +196,7 @@ class CreateServiceRequestServiceTest {
         when(serviceRequestRepository.existsActiveServiceRequestOverlapping(PET_ID, DATE, TEN, ELEVEN)).thenReturn(false);
         when(timeSlotRepository.occupyIfFree(SLOT_ID)).thenReturn(true);
 
-        service.createServiceRequest(OWNER_ID, request(null));
+        service.createServiceRequest(request(null));
 
         InOrder order = inOrder(petRepository, serviceRequestRepository, timeSlotRepository, historyRepository);
         order.verify(petRepository).findByIdForUpdate(PET_ID);
@@ -211,7 +211,7 @@ class CreateServiceRequestServiceTest {
         givenSlotOf(OfferingType.PRODUCTO);
         when(serviceRequestRepository.existsActiveRequestForPetAndSlot(PET_ID, SLOT_ID)).thenReturn(false);
 
-        ServiceRequestResponse response = service.createServiceRequest(OWNER_ID, request(PurchaseType.RETIRO));
+        ServiceRequestResponse response = service.createServiceRequest(request(PurchaseType.RETIRO));
 
         verify(timeSlotRepository, never()).occupyIfFree(any());
         verify(serviceRequestRepository, never()).existsActiveServiceRequestOverlapping(any(), any(), any(), any());
@@ -225,7 +225,7 @@ class CreateServiceRequestServiceTest {
         givenSlotOf(OfferingType.PRODUCTO);
         when(serviceRequestRepository.existsActiveRequestForPetAndSlot(PET_ID, SLOT_ID)).thenReturn(true);
 
-        assertThatThrownBy(() -> service.createServiceRequest(OWNER_ID, request(PurchaseType.RETIRO)))
+        assertThatThrownBy(() -> service.createServiceRequest(request(PurchaseType.RETIRO)))
                 .isInstanceOf(DuplicateServiceRequestException.class);
         verifyNothingSaved();
     }
@@ -235,7 +235,7 @@ class CreateServiceRequestServiceTest {
         givenSlotOf(OfferingType.SERVICIO);
         when(serviceRequestRepository.existsActiveServiceRequestOverlapping(PET_ID, DATE, TEN, ELEVEN)).thenReturn(true);
 
-        assertThatThrownBy(() -> service.createServiceRequest(OWNER_ID, request(null)))
+        assertThatThrownBy(() -> service.createServiceRequest(request(null)))
                 .isInstanceOf(DuplicateServiceRequestException.class);
         verify(timeSlotRepository, never()).occupyIfFree(any());
         verifyNothingSaved();
@@ -247,7 +247,7 @@ class CreateServiceRequestServiceTest {
         when(serviceRequestRepository.existsActiveServiceRequestOverlapping(PET_ID, DATE, TEN, ELEVEN)).thenReturn(false);
         when(timeSlotRepository.occupyIfFree(SLOT_ID)).thenReturn(false);
 
-        assertThatThrownBy(() -> service.createServiceRequest(OWNER_ID, request(null)))
+        assertThatThrownBy(() -> service.createServiceRequest(request(null)))
                 .isInstanceOf(TimeSlotUnavailableException.class);
         verifyNothingSaved();
     }
@@ -256,7 +256,7 @@ class CreateServiceRequestServiceTest {
     void rejectsPurchaseTypeOnServiceBeforeOccupyingSlot() {
         givenSlotOf(OfferingType.SERVICIO);
 
-        assertThatThrownBy(() -> service.createServiceRequest(OWNER_ID, request(PurchaseType.ENTREGA)))
+        assertThatThrownBy(() -> service.createServiceRequest(request(PurchaseType.ENTREGA)))
                 .isInstanceOf(IllegalArgumentException.class);
         verify(timeSlotRepository, never()).occupyIfFree(any());
         verifyNothingSaved();
@@ -266,7 +266,7 @@ class CreateServiceRequestServiceTest {
     void rejectsProductWithoutPurchaseType() {
         givenSlotOf(OfferingType.PRODUCTO);
 
-        assertThatThrownBy(() -> service.createServiceRequest(OWNER_ID, request(null)))
+        assertThatThrownBy(() -> service.createServiceRequest(request(null)))
                 .isInstanceOf(IllegalArgumentException.class);
         verifyNothingSaved();
     }
@@ -276,7 +276,7 @@ class CreateServiceRequestServiceTest {
         givenOwnerAndPet();
         when(timeSlotRepository.findById(SLOT_ID)).thenReturn(Optional.of(slot(LocalDate.of(2026, 11, 9))));
 
-        assertThatThrownBy(() -> service.createServiceRequest(OWNER_ID, request(null)))
+        assertThatThrownBy(() -> service.createServiceRequest(request(null)))
                 .isInstanceOf(TimeSlotUnavailableException.class);
         verify(timeSlotRepository, never()).occupyIfFree(any());
         verifyNothingSaved();
@@ -287,7 +287,7 @@ class CreateServiceRequestServiceTest {
         givenOwnerAndPet();
         when(timeSlotRepository.findById(SLOT_ID)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.createServiceRequest(OWNER_ID, request(null)))
+        assertThatThrownBy(() -> service.createServiceRequest(request(null)))
                 .isInstanceOf(TimeSlotNotFoundException.class);
         verifyNothingSaved();
     }
@@ -297,7 +297,7 @@ class CreateServiceRequestServiceTest {
         when(ownerRepository.findById(OWNER_ID)).thenReturn(Optional.of(owner(Role.USER)));
         when(petRepository.findByIdForUpdate(PET_ID)).thenReturn(Optional.of(petOwnedBy(UUID.randomUUID())));
 
-        assertThatThrownBy(() -> service.createServiceRequest(OWNER_ID, request(null)))
+        assertThatThrownBy(() -> service.createServiceRequest(request(null)))
                 .isInstanceOf(PetNotOwnedException.class);
         verifyNothingSaved();
     }
@@ -307,7 +307,7 @@ class CreateServiceRequestServiceTest {
         when(ownerRepository.findById(OWNER_ID)).thenReturn(Optional.of(owner(Role.USER)));
         when(petRepository.findByIdForUpdate(PET_ID)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.createServiceRequest(OWNER_ID, request(null)))
+        assertThatThrownBy(() -> service.createServiceRequest(request(null)))
                 .isInstanceOf(PetNotFoundException.class);
         verifyNothingSaved();
     }
@@ -316,7 +316,7 @@ class CreateServiceRequestServiceTest {
     void rejectsAccountWithoutUserRole() {
         when(ownerRepository.findById(OWNER_ID)).thenReturn(Optional.of(owner(Role.PROVIDER)));
 
-        assertThatThrownBy(() -> service.createServiceRequest(OWNER_ID, request(null)))
+        assertThatThrownBy(() -> service.createServiceRequest(request(null)))
                 .isInstanceOf(RoleNotAllowedException.class);
         verify(petRepository, never()).findByIdForUpdate(any());
         verifyNothingSaved();
@@ -326,7 +326,7 @@ class CreateServiceRequestServiceTest {
     void rejectsUnknownOwner() {
         when(ownerRepository.findById(OWNER_ID)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.createServiceRequest(OWNER_ID, request(null)))
+        assertThatThrownBy(() -> service.createServiceRequest(request(null)))
                 .isInstanceOf(OwnerNotFoundException.class);
         verifyNothingSaved();
     }

@@ -49,7 +49,7 @@ class PetControllerTest {
         when(petQuery.listPetsByOwner(OWNER_ID))
                 .thenReturn(List.of(new PetResponse(petId, "Luna", type, 3, "Tranquila")));
 
-        mockMvc.perform(get("/pets").principal(OWNER_ID::toString))
+        mockMvc.perform(get("/pets").param("ownerId", OWNER_ID.toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(petId.toString()))
                 .andExpect(jsonPath("$[0].name").value("Luna"))
@@ -62,7 +62,19 @@ class PetControllerTest {
     void returnsNotFoundForUnknownOwner() throws Exception {
         when(petQuery.listPetsByOwner(OWNER_ID)).thenThrow(new OwnerNotFoundException(OWNER_ID));
 
-        mockMvc.perform(get("/pets").principal(OWNER_ID::toString))
+        mockMvc.perform(get("/pets").param("ownerId", OWNER_ID.toString()))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void returnsBadRequestWhenOwnerIdIsMissing() throws Exception {
+        mockMvc.perform(get("/pets"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void returnsBadRequestWhenOwnerIdIsNotAUuid() throws Exception {
+        mockMvc.perform(get("/pets").param("ownerId", "not-a-uuid"))
+                .andExpect(status().isBadRequest());
     }
 }

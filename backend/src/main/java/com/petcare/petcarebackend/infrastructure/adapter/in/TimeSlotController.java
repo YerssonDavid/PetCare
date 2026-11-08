@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
 
@@ -41,13 +40,12 @@ public class TimeSlotController {
             summary = "Crear franja horaria",
             description = "Crea una franja para un servicio o producto del proveedor: la cita de un servicio, o la hora de retiro o entrega de un producto. "
                     + "Debe terminar a más tardar a las 17:00 y empezar en el futuro (hora de Bogotá). "
-                    + "Las franjas de servicios no pueden cruzarse entre sí; las de productos no se validan."
+                    + "Las franjas de servicios no pueden cruzarse entre sí; las de productos no se validan. "
+                    + "Temporalmente no requiere autenticación hasta implementar JWT."
     )
     @ApiResponse(responseCode = "201", description = "Franja creada; devuelve el id generado",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = RegisterResponse.class)))
     @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos",
-            content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
-    @ApiResponse(responseCode = "401", description = "Token ausente, inválido o expirado",
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
     @ApiResponse(responseCode = "403", description = "La cuenta no tiene el rol PROVIDER o el servicio es de otro proveedor",
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
@@ -58,9 +56,8 @@ public class TimeSlotController {
     @ApiResponse(responseCode = "500", description = "Error interno",
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
     public ResponseEntity<RegisterResponse> createTimeSlot(@PathVariable UUID offeringId,
-                                                           @Valid @RequestBody CreateTimeSlotRequest request,
-                                                           Principal principal) {
-        RegisterResponse response = timeSlotRegistry.createTimeSlot(offeringId, CurrentAccount.idOf(principal), request);
+                                                           @Valid @RequestBody CreateTimeSlotRequest request) {
+        RegisterResponse response = timeSlotRegistry.createTimeSlot(offeringId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -71,8 +68,6 @@ public class TimeSlotController {
     )
     @ApiResponse(responseCode = "200", description = "Franjas libres; lista vacía si no hay ninguna",
             content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = TimeSlotResponse.class))))
-    @ApiResponse(responseCode = "401", description = "Token ausente, inválido o expirado",
-            content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
     @ApiResponse(responseCode = "404", description = "Servicio inexistente",
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
     @ApiResponse(responseCode = "500", description = "Error interno",

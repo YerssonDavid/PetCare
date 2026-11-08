@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
 
@@ -44,13 +43,11 @@ public class OfferingController {
     @PostMapping
     @Operation(
             summary = "Publicar servicio o producto",
-            description = "Publica un servicio o producto del proveedor autenticado; requiere el rol PROVIDER."
+            description = "Publica un servicio o producto de un proveedor; requiere el rol PROVIDER. Temporalmente no requiere autenticación hasta implementar JWT."
     )
     @ApiResponse(responseCode = "201", description = "Publicado; devuelve el id generado",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = RegisterResponse.class)))
     @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos",
-            content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
-    @ApiResponse(responseCode = "401", description = "Token ausente, inválido o expirado",
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
     @ApiResponse(responseCode = "403", description = "La cuenta no tiene el rol PROVIDER",
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
@@ -60,8 +57,8 @@ public class OfferingController {
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
     @ApiResponse(responseCode = "500", description = "Error interno",
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
-    public ResponseEntity<RegisterResponse> publishOffering(@Valid @RequestBody PublishOfferingRequest request, Principal principal) {
-        RegisterResponse response = offeringRegistry.publishOffering(CurrentAccount.idOf(principal), request);
+    public ResponseEntity<RegisterResponse> publishOffering(@Valid @RequestBody PublishOfferingRequest request) {
+        RegisterResponse response = offeringRegistry.publishOffering(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -73,8 +70,6 @@ public class OfferingController {
     @ApiResponse(responseCode = "200", description = "Resultados de la búsqueda; lista vacía si no hay ninguno",
             content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = OfferingResponse.class))))
     @ApiResponse(responseCode = "400", description = "Categoría inválida",
-            content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
-    @ApiResponse(responseCode = "401", description = "Token ausente, inválido o expirado",
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
     @ApiResponse(responseCode = "500", description = "Error interno",
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
@@ -90,8 +85,6 @@ public class OfferingController {
     @ApiResponse(responseCode = "200", description = "Detalle del servicio o producto",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = OfferingDetailResponse.class)))
     @ApiResponse(responseCode = "400", description = "Identificador con formato inválido",
-            content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
-    @ApiResponse(responseCode = "401", description = "Token ausente, inválido o expirado",
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
     @ApiResponse(responseCode = "404", description = "Servicio o producto inexistente",
             content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))

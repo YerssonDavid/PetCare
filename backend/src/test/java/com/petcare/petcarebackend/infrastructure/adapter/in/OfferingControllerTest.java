@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -66,6 +65,7 @@ class OfferingControllerTest {
     private String body(String price) {
         return """
                 {
+                  "providerId": "%s",
                   "name": "Baño completo",
                   "description": "Baño y secado",
                   "conditions": "Vacunas al día",
@@ -73,55 +73,55 @@ class OfferingControllerTest {
                   "category": "PELUQUERIA",
                   "type": "SERVICIO"
                 }
-                """.formatted(price);
+                """.formatted(PROVIDER_ID, price);
     }
 
     @Test
     void publishesOffering() throws Exception {
         UUID id = UUID.randomUUID();
-        when(offeringRegistry.publishOffering(eq(PROVIDER_ID), any()))
+        when(offeringRegistry.publishOffering(any()))
                 .thenReturn(new RegisterResponse(id, "ok", LocalDateTime.now()));
 
-        mockMvc.perform(post("/services").principal(PROVIDER_ID::toString).contentType(MediaType.APPLICATION_JSON).content(body("45000")))
+        mockMvc.perform(post("/services").contentType(MediaType.APPLICATION_JSON).content(body("45000")))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(id.toString()));
     }
 
     @Test
     void rejectsNegativePrice() throws Exception {
-        mockMvc.perform(post("/services").principal(PROVIDER_ID::toString).contentType(MediaType.APPLICATION_JSON).content(body("-1")))
+        mockMvc.perform(post("/services").contentType(MediaType.APPLICATION_JSON).content(body("-1")))
                 .andExpect(status().isBadRequest());
-        verify(offeringRegistry, never()).publishOffering(any(), any());
+        verify(offeringRegistry, never()).publishOffering(any());
     }
 
     @Test
     void rejectsPriceWithMoreThanTwoDecimals() throws Exception {
-        mockMvc.perform(post("/services").principal(PROVIDER_ID::toString).contentType(MediaType.APPLICATION_JSON).content(body("10.005")))
+        mockMvc.perform(post("/services").contentType(MediaType.APPLICATION_JSON).content(body("10.005")))
                 .andExpect(status().isBadRequest());
-        verify(offeringRegistry, never()).publishOffering(any(), any());
+        verify(offeringRegistry, never()).publishOffering(any());
     }
 
     @Test
     void returnsNotFoundForUnknownProvider() throws Exception {
-        when(offeringRegistry.publishOffering(eq(PROVIDER_ID), any())).thenThrow(new ProviderNotFoundException(PROVIDER_ID));
+        when(offeringRegistry.publishOffering(any())).thenThrow(new ProviderNotFoundException(PROVIDER_ID));
 
-        mockMvc.perform(post("/services").principal(PROVIDER_ID::toString).contentType(MediaType.APPLICATION_JSON).content(body("45000")))
+        mockMvc.perform(post("/services").contentType(MediaType.APPLICATION_JSON).content(body("45000")))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void returnsConflictForRepeatedName() throws Exception {
-        when(offeringRegistry.publishOffering(eq(PROVIDER_ID), any())).thenThrow(new OfferingAlreadyExistsException("Baño completo"));
+        when(offeringRegistry.publishOffering(any())).thenThrow(new OfferingAlreadyExistsException("Baño completo"));
 
-        mockMvc.perform(post("/services").principal(PROVIDER_ID::toString).contentType(MediaType.APPLICATION_JSON).content(body("45000")))
+        mockMvc.perform(post("/services").contentType(MediaType.APPLICATION_JSON).content(body("45000")))
                 .andExpect(status().isConflict());
     }
 
     @Test
     void returnsForbiddenWithoutProviderRole() throws Exception {
-        when(offeringRegistry.publishOffering(eq(PROVIDER_ID), any())).thenThrow(new RoleNotAllowedException("denied"));
+        when(offeringRegistry.publishOffering(any())).thenThrow(new RoleNotAllowedException("denied"));
 
-        mockMvc.perform(post("/services").principal(PROVIDER_ID::toString).contentType(MediaType.APPLICATION_JSON).content(body("45000")))
+        mockMvc.perform(post("/services").contentType(MediaType.APPLICATION_JSON).content(body("45000")))
                 .andExpect(status().isForbidden());
     }
 

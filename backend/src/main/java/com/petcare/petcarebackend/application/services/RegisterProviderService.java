@@ -32,7 +32,7 @@ public class RegisterProviderService implements ProviderRegistry {
         Phone phone = new Phone(request.phone());
 
         if(providerRepositoryPort.existsByName(commercialName.value()) || providerRepositoryPort.existsByEmail(email.value()) || ownerRepositoryPort.existsByEmail(email.value()))
-            throw new ProviderAlreadyExistsException("Error en el registro");
+            throw new ProviderAlreadyExistsException("Error in registry.");
 
         String hashedPassword = passwordEncoder.encode(request.password());
 

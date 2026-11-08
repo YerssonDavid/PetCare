@@ -24,19 +24,19 @@ public class RegisterPetService implements PetRegistry {
     private final OwnerRepositoryPort ownerRepository;
 
     @Override
-    public RegisterResponse registerPet(UUID ownerId, RegisterPetRequest request) {
-        if(!ownerRepository.existsById(ownerId)){
-            throw new OwnerNotFoundException(ownerId);
+    public RegisterResponse registerPet(RegisterPetRequest request) {
+        if(!ownerRepository.existsById(request.ownerId())){
+            throw new OwnerNotFoundException(request.ownerId());
         }
 
         PetName name = new PetName(request.name());
 
-        if(petRepository.existsByOwnerIdAndNormalizedName(ownerId, name.normalized())){
+        if(petRepository.existsByOwnerIdAndNormalizedName(request.ownerId(), name.normalized())){
             throw new PetAlreadyExistsException(name.value());
         }
 
         Pet pet = Pet.register(
-                ownerId,
+                request.ownerId(),
                 name,
                 request.typePet(),
                 request.age(),
@@ -44,7 +44,7 @@ public class RegisterPetService implements PetRegistry {
         );
 
         petRepository.savePet(pet);
-        return new RegisterResponse(pet.getId(), "La mascota se ha registrado correctamente", LocalDateTime.now());
+        return new RegisterResponse(pet.getId(), "Pet registered successfully", LocalDateTime.now());
     }
 
     @Override

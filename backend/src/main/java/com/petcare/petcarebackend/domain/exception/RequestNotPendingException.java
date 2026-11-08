@@ -2,6 +2,6 @@ package com.petcare.petcarebackend.domain.exception;
 
 public class RequestNotPendingException extends RuntimeException {
     public RequestNotPendingException() {
-        super("La solicitud ya fue respondida");
+        super("La solicitud ya fue cancelada o atendida");
     }
 }
