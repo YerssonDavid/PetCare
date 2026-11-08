@@ -29,6 +29,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         // TODO: require authentication once JWT exists; ownerId currently comes from the request body
                         .requestMatchers(HttpMethod.POST, "/registry/pet").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/registry/pet").permitAll()
                         .requestMatchers(HttpMethod.POST, "/registry/provider").permitAll()
                         // Public catalog for the prototype; mutations remain protected.
                         .requestMatchers(HttpMethod.GET, "/services", "/services/**").permitAll()

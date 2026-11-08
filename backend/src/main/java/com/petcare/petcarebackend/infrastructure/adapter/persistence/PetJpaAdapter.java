@@ -57,7 +57,7 @@ public class PetJpaAdapter implements PetRepositoryPort {
 
     @Override
     public boolean deleteByIdAndOwnerId(UUID petId, UUID ownerId) {
-        return petRepository.deleteByIdAndOwnerId(petId, ownerId);
+        return petRepository.deleteByIdAndOwnerId(petId, ownerId) > 0;
     }
 
     @Override

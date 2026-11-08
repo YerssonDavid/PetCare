@@ -11,6 +11,7 @@ import com.petcare.petcarebackend.domain.entity.Pet;
 import com.petcare.petcarebackend.domain.valueobject.PetName;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -48,6 +49,7 @@ public class RegisterPetService implements PetRegistry {
     }
 
     @Override
+    @Transactional
     public boolean deletePet(UUID petId, UUID ownerId) {
         return petRepository.deleteByIdAndOwnerId(petId, ownerId);
     }
