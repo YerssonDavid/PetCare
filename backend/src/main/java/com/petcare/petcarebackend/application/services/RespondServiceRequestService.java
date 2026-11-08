@@ -5,6 +5,7 @@ import com.petcare.petcarebackend.application.dto.RejectServiceRequestRequest;
 import com.petcare.petcarebackend.application.dto.ServiceRequestDetails;
 import com.petcare.petcarebackend.application.dto.ServiceRequestResponse;
 import com.petcare.petcarebackend.application.exception.NotRequestProviderException;
+import com.petcare.petcarebackend.application.exception.NotRequestParticipantException;
 import com.petcare.petcarebackend.application.exception.ProviderNotFoundException;
 import com.petcare.petcarebackend.application.exception.RoleNotAllowedException;
 import com.petcare.petcarebackend.application.exception.ServiceRequestNotFoundException;
@@ -19,6 +20,7 @@ import com.petcare.petcarebackend.domain.entity.ServiceRequest;
 import com.petcare.petcarebackend.domain.entity.ServiceRequestHistory;
 import com.petcare.petcarebackend.domain.enums.OfferingType;
 import com.petcare.petcarebackend.domain.enums.Role;
+import com.petcare.petcarebackend.domain.enums.RequestStatus;
 import com.petcare.petcarebackend.domain.exception.RequestNotPendingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -70,6 +72,24 @@ public class RespondServiceRequestService implements ServiceRequestAnswerRegistr
         }
         saveHistory(details.request(), now);
 
+        return ServiceRequestResponse.from(details);
+    }
+
+    @Override
+    @Transactional
+    public ServiceRequestResponse cancelServiceRequest(UUID requestId, UUID ownerId) {
+        ServiceRequestDetails details = serviceRequestRepository.findDetailsById(requestId)
+                .orElseThrow(() -> new ServiceRequestNotFoundException(requestId));
+        if (!details.request().getOwnerId().equals(ownerId)) {
+            throw new NotRequestParticipantException();
+        }
+        details.request().setStatus(RequestStatus.CANCELADA);
+        if (!serviceRequestRepository.updateIfPending(details.request())) {
+            throw new RequestNotPendingException();
+        }
+        timeSlotRepository.release(details.slot().getId());
+        LocalDateTime now = LocalDateTime.now(clock);
+        historyRepository.saveHistory(ServiceRequestHistory.of(details.request(), now));
         return ServiceRequestResponse.from(details);
     }
 

@@ -33,6 +33,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/services", "/services/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/pets", "/service-requests/mine").permitAll()
                         .requestMatchers(HttpMethod.POST, "/service-requests").permitAll()
+                        .requestMatchers(HttpMethod.PATCH, "/service-requests/*/cancel").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

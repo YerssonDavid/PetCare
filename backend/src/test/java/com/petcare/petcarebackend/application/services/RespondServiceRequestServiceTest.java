@@ -5,6 +5,7 @@ import com.petcare.petcarebackend.application.dto.RejectServiceRequestRequest;
 import com.petcare.petcarebackend.application.dto.ServiceRequestDetails;
 import com.petcare.petcarebackend.application.dto.ServiceRequestResponse;
 import com.petcare.petcarebackend.application.exception.NotRequestProviderException;
+import com.petcare.petcarebackend.application.exception.NotRequestParticipantException;
 import com.petcare.petcarebackend.application.exception.ProviderNotFoundException;
 import com.petcare.petcarebackend.application.exception.RoleNotAllowedException;
 import com.petcare.petcarebackend.application.exception.ServiceRequestNotFoundException;
@@ -128,6 +129,10 @@ class RespondServiceRequestServiceTest {
     private void givenRequest(OfferingType type, RequestStatus status, LocalDateTime slotStart) {
         when(providerRepository.findById(PROVIDER_ID)).thenReturn(Optional.of(provider(PROVIDER_ID, Role.PROVIDER)));
         when(serviceRequestRepository.findDetailsById(REQUEST_ID)).thenReturn(Optional.of(details(type, status, slotStart)));
+    }
+
+    private void givenOwnerRequest(OfferingType type, RequestStatus status) {
+        when(serviceRequestRepository.findDetailsById(REQUEST_ID)).thenReturn(Optional.of(details(type, status)));
     }
 
     private AcceptServiceRequestRequest accept() {
@@ -360,5 +365,44 @@ class RespondServiceRequestServiceTest {
         assertThatThrownBy(() -> service.rejectServiceRequest(REQUEST_ID, reject()))
                 .isInstanceOf(ProviderNotFoundException.class);
         verifyNothingChanged();
+    }
+
+    @Test
+    void ownerCancelsPendingRequestReleasesSlotAndWritesHistory() {
+        givenOwnerRequest(OfferingType.SERVICIO, RequestStatus.PENDIENTE);
+        when(serviceRequestRepository.updateIfPending(any())).thenReturn(true);
+
+        ServiceRequestResponse response = service.cancelServiceRequest(REQUEST_ID, OWNER_ID);
+
+        ArgumentCaptor<ServiceRequest> stored = ArgumentCaptor.forClass(ServiceRequest.class);
+        verify(serviceRequestRepository).updateIfPending(stored.capture());
+        assertThat(stored.getValue().getStatus()).isEqualTo(RequestStatus.CANCELADA);
+        verify(timeSlotRepository).release(SLOT_ID);
+
+        ServiceRequestHistory history = savedHistory();
+        assertThat(history.getStatus()).isEqualTo(RequestStatus.CANCELADA);
+        assertThat(history.getChangedAt()).isEqualTo(NOW);
+        assertThat(response.status()).isEqualTo(RequestStatus.CANCELADA);
+    }
+
+    @Test
+    void cancellationRequiresTheRequestOwner() {
+        givenOwnerRequest(OfferingType.SERVICIO, RequestStatus.PENDIENTE);
+
+        assertThatThrownBy(() -> service.cancelServiceRequest(REQUEST_ID, UUID.randomUUID()))
+                .isInstanceOf(NotRequestParticipantException.class);
+        verifyNothingChanged();
+    }
+
+    @Test
+    void cancellationCannotBeRepeatedOrAppliedToAnsweredRequest() {
+        givenOwnerRequest(OfferingType.SERVICIO, RequestStatus.ACEPTADO);
+        when(serviceRequestRepository.updateIfPending(any())).thenReturn(false);
+
+        assertThatThrownBy(() -> service.cancelServiceRequest(REQUEST_ID, OWNER_ID))
+                .isInstanceOf(RequestNotPendingException.class);
+        verify(serviceRequestRepository).updateIfPending(any());
+        verify(timeSlotRepository, never()).release(any());
+        verify(historyRepository, never()).saveHistory(any());
     }
 }

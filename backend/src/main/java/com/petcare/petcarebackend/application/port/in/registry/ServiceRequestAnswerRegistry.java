@@ -9,4 +9,5 @@ import java.util.UUID;
 public interface ServiceRequestAnswerRegistry {
     ServiceRequestResponse acceptServiceRequest(UUID requestId, AcceptServiceRequestRequest request);
     ServiceRequestResponse rejectServiceRequest(UUID requestId, RejectServiceRequestRequest request);
+    ServiceRequestResponse cancelServiceRequest(UUID requestId, UUID ownerId);
 }

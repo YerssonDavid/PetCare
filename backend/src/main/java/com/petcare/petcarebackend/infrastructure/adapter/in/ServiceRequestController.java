@@ -160,6 +160,12 @@ public class ServiceRequestController {
         return serviceRequestHistoryQuery.getServiceRequestHistory(id, accountId);
     }
 
+    @PatchMapping("/{id}/cancel")
+    @Operation(summary = "Cancelar solicitud", description = "Cancela una solicitud PENDIENTE de su propietario y libera la franja.")
+    public ServiceRequestResponse cancelServiceRequest(@PathVariable UUID id, @RequestParam UUID ownerId) {
+        return serviceRequestAnswerRegistry.cancelServiceRequest(id, ownerId);
+    }
+
     @PatchMapping("/{id}/accept")
     @Operation(
             summary = "Aceptar solicitud",

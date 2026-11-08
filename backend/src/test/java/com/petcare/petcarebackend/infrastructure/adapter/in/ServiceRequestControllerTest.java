@@ -193,6 +193,11 @@ class ServiceRequestControllerTest {
                         """.formatted(PROVIDER_ID, reason)));
     }
 
+    private ResultActions patchCancel(UUID ownerId) throws Exception {
+        return mockMvc.perform(patch("/service-requests/{id}/cancel", ID)
+                .param("ownerId", ownerId.toString()));
+    }
+
     @Test
     void acceptsRequestAndReturnsConfirmation() throws Exception {
         when(serviceRequestAnswerRegistry.acceptServiceRequest(eq(ID), any()))
@@ -342,7 +347,44 @@ class ServiceRequestControllerTest {
 
     @Test
     void mineRequiresOwnerId() throws Exception {
-        mockMvc.perform(get("/service-requests/mine")).andExpect(status().isBadRequest());
+        mockMvc.perform(get("/service-requests/mine"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value("El parámetro ownerId es obligatorio"));
+    }
+
+    @Test
+    void cancelsRequestAndReturnsConfirmation() throws Exception {
+        when(serviceRequestAnswerRegistry.cancelServiceRequest(ID, PROVIDER_ID))
+                .thenReturn(answered(RequestStatus.CANCELADA, null));
+
+        patchCancel(PROVIDER_ID)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(ID.toString()))
+                .andExpect(jsonPath("$.status").value("CANCELADA"));
+    }
+
+    @Test
+    void cancelRequiresOwnerId() throws Exception {
+        mockMvc.perform(patch("/service-requests/{id}/cancel", ID))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value("El parámetro ownerId es obligatorio"));
+        verify(serviceRequestAnswerRegistry, never()).cancelServiceRequest(any(), any());
+    }
+
+    @Test
+    void cancellationReturnsForbiddenForAnotherOwner() throws Exception {
+        when(serviceRequestAnswerRegistry.cancelServiceRequest(ID, PROVIDER_ID))
+                .thenThrow(new NotRequestParticipantException());
+
+        patchCancel(PROVIDER_ID).andExpect(status().isForbidden());
+    }
+
+    @Test
+    void cancellationReturnsConflictWhenRequestIsNotPending() throws Exception {
+        when(serviceRequestAnswerRegistry.cancelServiceRequest(ID, PROVIDER_ID))
+                .thenThrow(new RequestNotPendingException());
+
+        patchCancel(PROVIDER_ID).andExpect(status().isConflict());
     }
 
     @Test
