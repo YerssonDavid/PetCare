@@ -8,6 +8,7 @@ import com.petcare.petcarebackend.application.exception.OfferingAlreadyExistsExc
 import com.petcare.petcarebackend.application.exception.OfferingNotFoundException;
 import com.petcare.petcarebackend.application.exception.OwnerAlreadyExistsException;
 import com.petcare.petcarebackend.application.exception.OwnerNotFoundException;
+import com.petcare.petcarebackend.application.exception.InvalidOwnerCredentialsException;
 import com.petcare.petcarebackend.application.exception.PetAlreadyExistsException;
 import com.petcare.petcarebackend.application.exception.PetNotFoundException;
 import com.petcare.petcarebackend.application.exception.PetNotOwnedException;
@@ -78,6 +79,11 @@ public class GlobalException extends ResponseEntityExceptionHandler {
     @ExceptionHandler(OwnerNotFoundException.class)
     public ProblemDetail handleOwnerNotFound(OwnerNotFoundException ex) {
         return problem(HttpStatus.NOT_FOUND, "Recurso no encontrado", ex.getMessage());
+    }
+
+    @ExceptionHandler(InvalidOwnerCredentialsException.class)
+    public ProblemDetail handleInvalidOwnerCredentials(InvalidOwnerCredentialsException ex) {
+        return problem(HttpStatus.UNAUTHORIZED, "No se pudo iniciar sesión", ex.getMessage());
     }
 
     @ExceptionHandler(ProviderNotFoundException.class)

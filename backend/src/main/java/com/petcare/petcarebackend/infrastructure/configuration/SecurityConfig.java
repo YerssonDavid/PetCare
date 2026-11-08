@@ -26,6 +26,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(a -> a
                         .requestMatchers(HttpMethod.POST, "/registry/owner").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         // TODO: require authentication once JWT exists; ownerId currently comes from the request body
                         .requestMatchers(HttpMethod.POST, "/registry/pet").permitAll()
                         .requestMatchers(HttpMethod.POST, "/registry/provider").permitAll()
