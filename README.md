@@ -59,15 +59,17 @@ Servicios: frontend `5173`, backend `8080`, PostgreSQL `5432`.
 ### Flujo de demostración
 
 1. Crear una cuenta y registrar una mascota en **Mis mascotas**.
-2. Entrar a **Servicios**, abrir un servicio y seleccionar una franja libre.
-3. Elegir la mascota y pulsar **Solicitar**. La solicitud queda en estado **Pendiente**.
-4. Entrar a **Solicitudes** para consultar fecha, hora, servicio, mascota y estado.
-5. Pulsar **Cancelar** y confirmar. La solicitud queda **Cancelada** y la franja vuelve a estar disponible.
+2. En una sesión posterior, entrar con el correo y la contraseña desde **Iniciar sesión**.
+3. Entrar a **Servicios**, abrir un servicio y seleccionar una franja libre.
+4. Elegir la mascota y pulsar **Solicitar**. La solicitud queda en estado **Pendiente**.
+5. Entrar a **Solicitudes** para consultar fecha, hora, servicio, mascota y estado.
+6. Pulsar **Cancelar** y confirmar. La solicitud queda **Cancelada** y la franja vuelve a estar disponible.
 
 ### API principal
 
 - `GET /services` y `GET /services/{id}`: catálogo y detalle.
 - `GET /services/{id}/slots/free`: franjas libres.
+- `POST /auth/login`: iniciar sesión y recuperar el propietario registrado.
 - `POST /service-requests`: crear una solicitud.
 - `GET /service-requests/mine?ownerId=...`: historial del propietario.
 - `PATCH /service-requests/{id}/cancel?ownerId=...`: cancelar una solicitud pendiente.
