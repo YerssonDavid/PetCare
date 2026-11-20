@@ -2,6 +2,5 @@ package com.petcare.petcarebackend.application.port.out;
 
 public interface PasswordEncoder {
     String encode(String password);
-
-    boolean matches(String rawPassword, String encodedPassword);
+    boolean matches(String password, String encodedPassword);
 }

@@ -9,13 +9,8 @@ import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 public record PublishOfferingRequest(
-        // TODO: remove once JWT exists; the provider ID must come from the token
-        @NotNull
-        UUID providerId,
-
         @NotBlank
         @Size(max = 100)
         String name,

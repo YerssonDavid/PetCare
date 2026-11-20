@@ -6,10 +6,6 @@ import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
 public record CreateServiceRequestRequest(
-        // TODO: remove once JWT exists; the owner ID must come from the token
-        @NotNull
-        UUID ownerId,
-
         @NotNull
         UUID petId,
 

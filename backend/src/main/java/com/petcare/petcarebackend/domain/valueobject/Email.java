@@ -10,14 +10,14 @@ public record Email(String value) {
 
     public Email {
         if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException("Email is required");
+            throw new IllegalArgumentException("El correo es obligatorio");
         }
         value = value.trim().toLowerCase(Locale.ROOT);
         if (value.length() > MAX_LENGTH) {
-            throw new IllegalArgumentException("Email must not exceed " + MAX_LENGTH + " characters");
+            throw new IllegalArgumentException("El correo no puede superar " + MAX_LENGTH + " caracteres");
         }
         if (!FORMAT.matcher(value).matches()) {
-            throw new IllegalArgumentException("Email format is invalid");
+            throw new IllegalArgumentException("El formato del correo no es válido");
         }
     }
 }

@@ -35,15 +35,15 @@ public class CreateTimeSlotService implements TimeSlotRegistry {
 
     @Override
     @Transactional
-    public RegisterResponse createTimeSlot(UUID offeringId, CreateTimeSlotRequest request) {
+    public RegisterResponse createTimeSlot(UUID offeringId, UUID providerId, CreateTimeSlotRequest request) {
         Offering offering = offeringRepository.findById(offeringId)
                 .orElseThrow(() -> new OfferingNotFoundException(offeringId));
 
-        Provider provider = providerRepository.findByIdForUpdate(request.providerId())
-                .orElseThrow(() -> new ProviderNotFoundException(request.providerId()));
+        Provider provider = providerRepository.findByIdForUpdate(providerId)
+                .orElseThrow(() -> new ProviderNotFoundException(providerId));
 
         if (provider.getRole() != Role.PROVIDER) {
-            throw new RoleNotAllowedException("Only providers can create time slots");
+            throw new RoleNotAllowedException("Solo los proveedores pueden crear franjas horarias");
         }
         if (!offering.getProviderId().equals(provider.getId())) {
             throw new NotOfferingOwnerException();

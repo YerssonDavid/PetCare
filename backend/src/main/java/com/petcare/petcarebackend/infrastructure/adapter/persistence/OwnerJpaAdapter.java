@@ -50,9 +50,4 @@ public class OwnerJpaAdapter implements OwnerRepositoryPort {
     public Optional<Owner> findById(UUID id) {
         return ownerRepository.findById(id).map(OwnerMapper::toDomain);
     }
-
-    @Override
-    public Optional<Owner> findByEmail(String email) {
-        return ownerRepository.findByEmail(email).map(OwnerMapper::toDomain);
-    }
 }

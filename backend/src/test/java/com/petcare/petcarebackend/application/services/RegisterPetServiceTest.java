@@ -39,7 +39,7 @@ class RegisterPetServiceTest {
     private RegisterPetService service;
 
     private RegisterPetRequest request(String name) {
-        return new RegisterPetRequest(OWNER_ID, name, TypePet.PERRO, 3, "cafe");
+        return new RegisterPetRequest(name, TypePet.PERRO, 3, "cafe");
     }
 
     @Test
@@ -47,7 +47,7 @@ class RegisterPetServiceTest {
         when(ownerRepository.existsById(OWNER_ID)).thenReturn(true);
         when(petRepository.existsByOwnerIdAndNormalizedName(OWNER_ID, "firulais")).thenReturn(false);
 
-        RegisterResponse response = service.registerPet(request(" Firulais "));
+        RegisterResponse response = service.registerPet(OWNER_ID, request(" Firulais "));
 
         ArgumentCaptor<Pet> saved = ArgumentCaptor.forClass(Pet.class);
         verify(petRepository).savePet(saved.capture());
@@ -60,7 +60,7 @@ class RegisterPetServiceTest {
     void rejectsUnknownOwner() {
         when(ownerRepository.existsById(OWNER_ID)).thenReturn(false);
 
-        assertThatThrownBy(() -> service.registerPet(request("Firulais")))
+        assertThatThrownBy(() -> service.registerPet(OWNER_ID, request("Firulais")))
                 .isInstanceOf(OwnerNotFoundException.class);
         verify(petRepository, never()).savePet(any());
     }
@@ -70,7 +70,7 @@ class RegisterPetServiceTest {
         when(ownerRepository.existsById(OWNER_ID)).thenReturn(true);
         when(petRepository.existsByOwnerIdAndNormalizedName(OWNER_ID, "firulais")).thenReturn(true);
 
-        assertThatThrownBy(() -> service.registerPet(request("FIRULAIS")))
+        assertThatThrownBy(() -> service.registerPet(OWNER_ID, request("FIRULAIS")))
                 .isInstanceOf(PetAlreadyExistsException.class);
         verify(petRepository, never()).savePet(any());
     }

@@ -1,20 +1,20 @@
 package com.petcare.petcarebackend.infrastructure.services;
 
 import org.junit.jupiter.api.Test;
-import com.petcare.petcarebackend.infrastructure.configuration.SecurityConfig;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class PasswordEncoderServiceTest {
 
-    private final PasswordEncoderService service =
-            new PasswordEncoderService(new SecurityConfig().passwordEncoder());
+    private final PasswordEncoderService service = new PasswordEncoderService(new BCryptPasswordEncoder());
 
     @Test
-    void encodesWithoutKeepingThePassword() {
+    void encodesWithBCryptWithoutKeepingThePassword() {
         String encoded = service.encode("password123");
 
-        assertThat(encoded).doesNotContain("password123");
+        assertThat(encoded).startsWith("$2").doesNotContain("password123");
     }
 
     @Test
@@ -25,4 +25,18 @@ class PasswordEncoderServiceTest {
         assertThat(service.matches("password124", encoded)).isFalse();
     }
 
+    @Test
+    void acceptsAPasswordOfExactlyTheBcryptLimit() {
+        String encoded = service.encode("a".repeat(72));
+
+        assertThat(service.matches("a".repeat(72), encoded)).isTrue();
+    }
+
+    // 72 characters pass the size validation of the request, but "ñ" takes two bytes
+    @Test
+    void rejectsAPasswordOverTheBcryptLimitInBytesWithAMessageForTheClient() {
+        assertThatThrownBy(() -> service.encode("ñ".repeat(72)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("La contraseña es demasiado larga");
+    }
 }
