@@ -1,0 +1,12 @@
+.git
+.idea
+.qodo
+**/node_modules
+**/dist
+**/coverage
+**/test-results
+**/playwright-report
+**/.env
+**/.env.*.local
+**/*.tsbuildinfo
+**/*Zone.Identifier

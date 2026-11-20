@@ -1,0 +1,4 @@
+minimumReleaseAgeExclude:
+  - '@tanstack/query-core@5.108.1'
+  - '@tanstack/react-query@5.108.1'
+  - '@testing-library/jest-dom@8.0.0'
