@@ -4,7 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
 import { Link, NavLink, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import type { z } from 'zod';
-import { ThemeSelect } from '../../app/ThemeSelect';
+import { ThemeToggle } from '../../app/ThemeToggle';
+import { Icon } from '../../shared/ui/Icon';
 import { Brand } from '../../shared/ui/Brand';
 import { Button, Field, Notice } from '../../shared/ui/components';
 import { api } from '../../shared/api/client';
@@ -33,7 +34,9 @@ export function AuthLayout() {
     <main id="main-content" tabIndex={-1} className={styles.layout}>
       <section className={styles.brandPanel}>
         <div>
-          <Brand />
+          <Link to="/" className={styles.brandLink} aria-label="PetCare, página principal">
+            <Brand />
+          </Link>
           <h1>El cuidado de tu mascota, en un solo lugar.</h1>
           <p>
             Encuentra y gestiona servicios de cuidado para tus mascotas con información clara y
@@ -44,7 +47,11 @@ export function AuthLayout() {
       </section>
       <section className={styles.formPanel}>
         <div className={styles.themeRow}>
-          <ThemeSelect />
+          <Link to="/" className={styles.homeLink}>
+            <Icon name="back" size={16} />
+            Volver a PetCare
+          </Link>
+          <ThemeToggle />
         </div>
         <div className={styles.formContent}>
           <nav className={styles.tabs} aria-label="Acceso a PetCare">
