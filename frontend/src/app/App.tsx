@@ -12,6 +12,8 @@ import { RequestsPage, HistoryPage } from '../features/service-requests/RequestP
 import { ApiError } from '../shared/api/http';
 import { Button, EmptyState } from '../shared/ui/components';
 import { Shell } from './Shell';
+import { ThemeProvider } from './ThemeProvider';
+import { LandingPage } from '../features/landing/LandingPage';
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   state = { failed: false };
@@ -86,46 +88,48 @@ export function App() {
   }, [queryClient]);
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <a href="#main-content" className="skip-link">
-            Saltar al contenido
-          </a>
-          <RouteFocus />
-          <Routes>
-            <Route element={<AuthLayout />}>
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/registro" element={<RegisterPage />} />
-            </Route>
-            <Route element={<ProtectedShell />}>
-              <Route path="/inicio" element={<DashboardPage />} />
-              <Route path="/mascotas" element={<PetsPage />} />
-              <Route path="/servicios" element={<CatalogPage />} />
-              <Route path="/servicios/:id" element={<OfferingPage />} />
-              <Route path="/solicitudes" element={<RequestsPage />} />
-              <Route path="/solicitudes/:id/historial" element={<HistoryPage />} />
-            </Route>
-            <Route path="/" element={<Navigate to="/inicio" replace />} />
-            <Route
-              path="*"
-              element={
-                <main
-                  id="main-content"
-                  tabIndex={-1}
-                  style={{ maxWidth: 700, padding: '4rem 1rem', margin: 'auto' }}
-                >
-                  <EmptyState
-                    title="Esta página no está disponible"
-                    action={<Link to="/inicio">Volver al inicio</Link>}
+      <ThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <BrowserRouter>
+            <a href="#main-content" className="skip-link">
+              Saltar al contenido
+            </a>
+            <RouteFocus />
+            <Routes>
+              <Route element={<AuthLayout />}>
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/registro" element={<RegisterPage />} />
+              </Route>
+              <Route element={<ProtectedShell />}>
+                <Route path="/inicio" element={<DashboardPage />} />
+                <Route path="/mascotas" element={<PetsPage />} />
+                <Route path="/servicios" element={<CatalogPage />} />
+                <Route path="/servicios/:id" element={<OfferingPage />} />
+                <Route path="/solicitudes" element={<RequestsPage />} />
+                <Route path="/solicitudes/:id/historial" element={<HistoryPage />} />
+              </Route>
+              <Route path="/" element={<LandingPage />} />
+              <Route
+                path="*"
+                element={
+                  <main
+                    id="main-content"
+                    tabIndex={-1}
+                    style={{ maxWidth: 700, padding: '4rem 1rem', margin: 'auto' }}
                   >
-                    Comprueba la dirección o vuelve a tu espacio de PetCare.
-                  </EmptyState>
-                </main>
-              }
-            />
-          </Routes>
-        </BrowserRouter>
-      </QueryClientProvider>
+                    <EmptyState
+                      title="Esta página no está disponible"
+                      action={<Link to="/">Volver a PetCare</Link>}
+                    >
+                      Comprueba la dirección o vuelve a tu espacio de PetCare.
+                    </EmptyState>
+                  </main>
+                }
+              />
+            </Routes>
+          </BrowserRouter>
+        </QueryClientProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }
