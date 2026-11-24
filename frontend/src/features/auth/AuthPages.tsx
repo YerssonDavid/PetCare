@@ -17,8 +17,13 @@ import { loginSchema, registerSchema } from './validation';
 import ui from '../../shared/ui/ui.module.css';
 import styles from './AuthPages.module.css';
 
-function postLoginPath(search: string) {
+function postLoginPath(search: string, role: 'USER' | 'PROVIDER' = 'USER') {
   const redirect = new URLSearchParams(search).get('redirect');
+  if (role === 'PROVIDER') {
+    return redirect && /^\/proveedor(?:[/?#]|$)/.test(redirect) && !redirect.includes('\\')
+      ? redirect
+      : '/proveedor';
+  }
   return redirect &&
     /^\/(inicio|mascotas|servicios|solicitudes)(?:[/?#]|$)/.test(redirect) &&
     !redirect.includes('\\')
@@ -29,7 +34,7 @@ function postLoginPath(search: string) {
 export function AuthLayout() {
   const session = useSession();
   const location = useLocation();
-  if (session) return <Navigate to={postLoginPath(location.search)} replace />;
+  if (session) return <Navigate to={postLoginPath(location.search, session.role)} replace />;
   return (
     <main id="main-content" tabIndex={-1} className={styles.layout}>
       <section className={styles.brandPanel}>
@@ -43,7 +48,7 @@ export function AuthLayout() {
             confirmaciones organizadas.
           </p>
         </div>
-        <span className={styles.university}>UNIVERSIDAD IBEROAMERICANA</span>
+        <span className={styles.academicProject}>PROYECTO ACADÉMICO</span>
       </section>
       <section className={styles.formPanel}>
         <div className={styles.themeRow}>
@@ -92,7 +97,9 @@ export function LoginPage() {
           queryClient.clear();
           try {
             await authSession.login(values);
-            navigate(postLoginPath(location.search), { replace: true });
+            navigate(postLoginPath(location.search, authSession.getSnapshot()?.role), {
+              replace: true,
+            });
           } catch (caught) {
             setError(caught instanceof Error ? caught.message : 'No pudimos iniciar sesión.');
           }
@@ -101,6 +108,11 @@ export function LoginPage() {
         {params.get('registro') === 'completo' && (
           <Notice type="success">
             Tu cuenta está lista. Inicia sesión para registrar tu primera mascota.
+          </Notice>
+        )}
+        {params.get('registro') === 'proveedor' && (
+          <Notice type="success">
+            Tu cuenta de proveedor está lista. Inicia sesión para continuar.
           </Notice>
         )}
         {error && <Notice>{error}</Notice>}
@@ -232,6 +244,10 @@ export function RegisterPage() {
       </form>
       <p className={styles.footnote}>
         Tu cuenta te permitirá gestionar tus mascotas y sus solicitudes.
+      </p>
+      <p className={styles.footnote}>
+        ¿Ofreces servicios o productos?{' '}
+        <Link to="/registro/proveedor">Regístrate como proveedor</Link>
       </p>
     </>
   );

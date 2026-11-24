@@ -48,7 +48,11 @@ export function LandingPage() {
   const session = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuToggle = useRef<HTMLButtonElement>(null);
-  const destination = session ? '/inicio' : '/registro';
+  const destination = session
+    ? session.role === 'PROVIDER'
+      ? '/proveedor'
+      : '/inicio'
+    : '/registro';
   const action = session ? 'Ir a mi espacio' : 'Crear mi cuenta';
 
   return (
@@ -230,9 +234,9 @@ export function LandingPage() {
             <span className={styles.projectEyebrow}>CON PROPÓSITO, CON CARIÑO</span>
             <h2 id="project-title">La tecnología también puede cuidar.</h2>
             <p>
-              PetCare nace como un proyecto académico de Análisis y Diseño de Sistemas de la
-              Universidad Iberoamericana. Nuestro propósito es acercar a los propietarios de
-              mascotas a los servicios y productos que sus compañeros necesitan.
+              PetCare nace como un proyecto académico de Análisis y Diseño de Sistemas. Nuestro
+              propósito es acercar a los propietarios de mascotas a los servicios y productos que
+              sus compañeros necesitan.
             </p>
             <span className={styles.academicNote}>
               Un proyecto pensado desde el cuidado y construido para conectar.
@@ -286,11 +290,12 @@ export function LandingPage() {
             <a href="#funcionalidades">Funcionalidades</a>
             <a href="#como-funciona">Cómo funciona</a>
             <a href="#proyecto">El proyecto</a>
+            <a href="https://github.com/YerssonDavid/PetCare">GitHub</a>
           </nav>
         </div>
         <div className={`${styles.container} ${styles.footerBottom}`}>
           <span>© {new Date().getFullYear()} PetCare</span>
-          <span>Proyecto académico · Universidad Iberoamericana</span>
+          <span>Proyecto académico</span>
         </div>
       </footer>
     </div>
