@@ -2,7 +2,12 @@ import { z } from 'zod';
 import { authSession } from '../../features/auth/session';
 import { ApiError, requestJson } from './http';
 
-type Options = { method?: 'GET' | 'POST'; body?: unknown; signal?: AbortSignal; public?: boolean };
+type Options = {
+  method?: 'GET' | 'POST' | 'PATCH';
+  body?: unknown;
+  signal?: AbortSignal;
+  public?: boolean;
+};
 export async function api<T>(
   path: string,
   schema: z.ZodType<T>,

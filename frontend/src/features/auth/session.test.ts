@@ -80,15 +80,15 @@ describe('in-memory owner authentication', () => {
     expect(session.getSnapshot()).toBeNull();
   });
 
-  it('rejects provider accounts and malformed login responses without retaining tokens', async () => {
+  it('accepts provider accounts and rejects malformed login responses without retaining tokens', async () => {
     const session = createAuthSession(
       vi
         .fn()
         .mockResolvedValueOnce(tokenPair({ role: 'PROVIDER' }))
         .mockResolvedValueOnce({ token: 'invalid' }),
     );
-    await expect(session.login(credentials)).rejects.toThrow('propietarios');
-    expect(session.getSnapshot()).toBeNull();
+    await session.login(credentials);
+    expect(session.getSnapshot()?.role).toBe('PROVIDER');
     await expect(session.login(credentials)).rejects.toThrow('tokens');
     expect(session.getToken()).toBeNull();
   });

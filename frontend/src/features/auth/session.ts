@@ -11,12 +11,12 @@ const claimsSchema = z.object({
   role: z.enum(['USER', 'PROVIDER']),
   exp: z.number().int().positive(),
 });
-export type OwnerSession = { id: string; role: 'USER'; expiresAt: number };
+export type AuthSession = { id: string; role: 'USER' | 'PROVIDER'; expiresAt: number };
 
 /** A session is intentionally confined to this application instance, never browser storage. */
 export function createAuthSession(transport: Transport = requestJson) {
   let tokens: z.infer<typeof tokensSchema> | null = null;
-  let snapshot: OwnerSession | null = null;
+  let snapshot: AuthSession | null = null;
   let generation = 0;
   let renewal: { generation: number; promise: Promise<string> } | null = null;
   const listeners = new Set<() => void>();
@@ -42,14 +42,9 @@ export function createAuthSession(transport: Transport = requestJson) {
     } catch {
       throw new ApiError('El token recibido no contiene una identidad y un rol válidos.', 401);
     }
-    if (claims.role !== 'USER')
-      throw new ApiError(
-        'Esta versión de PetCare está disponible para propietarios. Inicia sesión con una cuenta de propietario.',
-        403,
-      );
     if (claims.exp * 1000 <= Date.now())
       throw new ApiError('El token recibido ya ha expirado. Vuelve a iniciar sesión.', 401);
-    if (snapshot && snapshot.id !== claims.sub)
+    if (snapshot && (snapshot.id !== claims.sub || snapshot.role !== claims.role))
       throw new ApiError('La identidad de la cuenta cambió durante la renovación.', 401);
     tokens = parsed.data;
     snapshot = { id: claims.sub, role: claims.role, expiresAt: claims.exp * 1000 };

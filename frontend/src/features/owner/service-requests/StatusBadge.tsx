@@ -1,5 +1,5 @@
-import { statusLabels, type ServiceRequest } from '../../shared/api/schemas';
-import styles from '../../shared/ui/ui.module.css';
+import { statusLabels, type ServiceRequest } from '../../../shared/api/schemas';
+import styles from '../../../shared/ui/ui.module.css';
 
 const classes = {
   PENDIENTE: styles.pending,

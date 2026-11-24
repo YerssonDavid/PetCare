@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { z } from 'zod';
-import { useOwnerId } from '../../app/useOwnerId';
-import { historyQuery, requestsQuery } from '../../shared/api/queries';
-import { petLabels, statuses, statusLabels } from '../../shared/api/schemas';
-import { money, slotDate, time, timestamp } from '../../shared/lib/format';
+import { useOwnerId } from '../../../app/useOwnerId';
+import { historyQuery, requestsQuery } from '../../../shared/api/queries';
+import { petLabels, statuses, statusLabels } from '../../../shared/api/schemas';
+import { money, slotDate, time, timestamp } from '../../../shared/lib/format';
 import {
   ButtonLink,
   EmptyState,
@@ -12,10 +12,10 @@ import {
   Notice,
   PageHeading,
   QueryError,
-} from '../../shared/ui/components';
-import { Icon } from '../../shared/ui/Icon';
+} from '../../../shared/ui/components';
+import { Icon } from '../../../shared/ui/Icon';
 import { StatusBadge } from './StatusBadge';
-import ui from '../../shared/ui/ui.module.css';
+import ui from '../../../shared/ui/ui.module.css';
 import styles from './Requests.module.css';
 
 export function RequestsPage() {

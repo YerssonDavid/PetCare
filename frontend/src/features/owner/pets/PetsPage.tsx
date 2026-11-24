@@ -3,11 +3,11 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useSearchParams } from 'react-router-dom';
 import type { z } from 'zod';
-import { useOwnerId } from '../../app/useOwnerId';
-import { api } from '../../shared/api/client';
-import type { components } from '../../shared/api/generated';
-import { ownerKeys, petsQuery } from '../../shared/api/queries';
-import { petLabels, petTypes, registerResponseSchema } from '../../shared/api/schemas';
+import { useOwnerId } from '../../../app/useOwnerId';
+import { api } from '../../../shared/api/client';
+import type { components } from '../../../shared/api/generated';
+import { ownerKeys, petsQuery } from '../../../shared/api/queries';
+import { petLabels, petTypes, registerResponseSchema } from '../../../shared/api/schemas';
 import {
   Button,
   ButtonLink,
@@ -17,10 +17,10 @@ import {
   Notice,
   PageHeading,
   QueryError,
-} from '../../shared/ui/components';
-import { Icon } from '../../shared/ui/Icon';
+} from '../../../shared/ui/components';
+import { Icon } from '../../../shared/ui/Icon';
 import { petFormSchema } from './validation';
-import ui from '../../shared/ui/ui.module.css';
+import ui from '../../../shared/ui/ui.module.css';
 import styles from './PetsPage.module.css';
 
 function PetForm({ ownerId, close }: { ownerId: string; close: (saved?: boolean) => void }) {

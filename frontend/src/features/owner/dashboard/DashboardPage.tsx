@@ -1,13 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { useOwnerId } from '../../app/useOwnerId';
-import { petsQuery, requestsQuery } from '../../shared/api/queries';
-import { petLabels } from '../../shared/api/schemas';
-import { slotDate, time } from '../../shared/lib/format';
-import { ButtonLink, EmptyState, Loading, QueryError } from '../../shared/ui/components';
-import { Icon } from '../../shared/ui/Icon';
+import { useOwnerId } from '../../../app/useOwnerId';
+import { petsQuery, requestsQuery } from '../../../shared/api/queries';
+import { petLabels } from '../../../shared/api/schemas';
+import { slotDate, time } from '../../../shared/lib/format';
+import { ButtonLink, EmptyState, Loading, QueryError } from '../../../shared/ui/components';
+import { Icon } from '../../../shared/ui/Icon';
 import { StatusBadge } from '../service-requests/StatusBadge';
-import ui from '../../shared/ui/ui.module.css';
+import ui from '../../../shared/ui/ui.module.css';
 import styles from './DashboardPage.module.css';
 
 export function DashboardPage() {

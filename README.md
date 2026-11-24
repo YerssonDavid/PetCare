@@ -11,7 +11,7 @@
 
 Frontend de PetCare, proyecto académico de Análisis y Diseño de Sistemas. Consume una API externa; este repositorio contiene exclusivamente la aplicación cliente y su configuración de desarrollo y publicación.
 
-La primera versión está destinada a propietarios (`USER`):
+La aplicación cuenta con espacios para propietarios (`USER`) y proveedores (`PROVIDER`):
 
 - Registro e inicio de sesión.
 - Panel de inicio con mascotas y solicitudes recientes.
@@ -20,6 +20,9 @@ La primera versión está destinada a propietarios (`USER`):
 - Detalle, contacto del proveedor y selección de franjas.
 - Solicitud de servicios o productos, con retiro o entrega para productos.
 - Consulta de estados e historial, incluido el motivo de rechazo.
+- Registro e inicio de sesión de proveedores.
+- Publicación de servicios y productos y creación de franjas horarias.
+- Consulta y respuesta de solicitudes recibidas, historial y servicios prestados.
 - Landing pública con información del proyecto, funcionalidades y accesos a la cuenta.
 - Tema automático según el sistema, con cambio directo claro/oscuro mediante sol y luna.
 - Barra lateral contraíble a iconos en escritorio y navegación desplegable en móvil.
@@ -71,9 +74,9 @@ Con una URL absoluta, la API debe permitir el origen del frontend mediante CORS.
 - Salir o perder la autenticación elimina las credenciales y la caché privada. Las respuestas pendientes no pueden restaurar una sesión cerrada.
 - Únicamente se persiste la preferencia de tema, bajo `petcare_theme` en `localStorage`.
 
-La ruta `/` muestra la landing pública sin consultar la API. El panel de propietario está en `/inicio` y requiere autenticación. El tema sigue el sistema mientras no exista una elección manual; al pulsar la luna o el sol, se guarda únicamente `dark` o `light`. La barra lateral conserva su estado en memoria al navegar por el panel.
+La ruta `/` muestra la landing pública sin consultar la API. Los paneles de propietario y proveedor están en `/inicio` y `/proveedor`, respectivamente, y requieren el rol correspondiente. El tema sigue el sistema mientras no exista una elección manual; al pulsar la luna o el sol, se guarda únicamente `dark` o `light`. La barra lateral conserva su estado en memoria al navegar por el panel.
 
-El registro devuelve una confirmación y conduce al login. Las cuentas de proveedor reciben un mensaje de alcance; el panel de proveedor pertenece a una entrega posterior.
+El registro devuelve una confirmación y conduce al login. El listado de publicaciones propias utiliza `GET /services` y filtra por `providerId`, ya que la API no dispone de un endpoint específico para ese listado.
 
 ## Contratos y fechas
 
@@ -131,11 +134,9 @@ frontend/src/
 ├── app/                   # Rutas, providers, layout y tema
 ├── features/
 │   ├── auth/              # Registro, login y autenticación en memoria
-│   ├── dashboard/
 │   ├── landing/           # Presentación pública del proyecto
-│   ├── pets/
-│   ├── offerings/         # Catálogo, detalle y creación de solicitudes
-│   └── service-requests/  # Listado e historial
+│   ├── owner/             # Panel, mascotas, catálogo y solicitudes del propietario
+│   └── provider/          # Registro, publicaciones, franjas y solicitudes del proveedor
 ├── shared/
 │   ├── api/               # HTTP, contratos, validación y consultas
 │   ├── lib/               # Fechas y formatos

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Icon } from '../../shared/ui/Icon';
+import { Icon } from '../../../shared/ui/Icon';
 import styles from './Offerings.module.css';
 
 export function OfferingVisual({

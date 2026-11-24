@@ -1,19 +1,19 @@
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
-import { useOwnerId } from '../../app/useOwnerId';
-import { offeringsQuery } from '../../shared/api/queries';
-import { categories, categoryLabels } from '../../shared/api/schemas';
-import { money } from '../../shared/lib/format';
+import { useOwnerId } from '../../../app/useOwnerId';
+import { offeringsQuery } from '../../../shared/api/queries';
+import { categories, categoryLabels } from '../../../shared/api/schemas';
+import { money } from '../../../shared/lib/format';
 import {
   ButtonLink,
   EmptyState,
   Loading,
   PageHeading,
   QueryError,
-} from '../../shared/ui/components';
-import { Icon } from '../../shared/ui/Icon';
+} from '../../../shared/ui/components';
+import { Icon } from '../../../shared/ui/Icon';
 import { OfferingVisual } from './OfferingVisual';
-import ui from '../../shared/ui/ui.module.css';
+import ui from '../../../shared/ui/ui.module.css';
 import styles from './Offerings.module.css';
 
 export function CatalogPage() {

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { petTypes } from '../../shared/api/schemas';
+import { petTypes } from '../../../shared/api/schemas';
 
 export const petFormSchema = z.object({
   name: z

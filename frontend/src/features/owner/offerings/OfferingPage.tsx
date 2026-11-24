@@ -3,13 +3,13 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { z } from 'zod';
-import { useOwnerId } from '../../app/useOwnerId';
-import { api } from '../../shared/api/client';
-import type { components } from '../../shared/api/generated';
-import { ApiError } from '../../shared/api/http';
-import { offeringQuery, ownerKeys, petsQuery, slotsQuery } from '../../shared/api/queries';
-import { categoryLabels, requestSchema } from '../../shared/api/schemas';
-import { isFutureSlot, money, slotDate, time } from '../../shared/lib/format';
+import { useOwnerId } from '../../../app/useOwnerId';
+import { api } from '../../../shared/api/client';
+import type { components } from '../../../shared/api/generated';
+import { ApiError } from '../../../shared/api/http';
+import { offeringQuery, ownerKeys, petsQuery, slotsQuery } from '../../../shared/api/queries';
+import { categoryLabels, requestSchema } from '../../../shared/api/schemas';
+import { isFutureSlot, money, slotDate, time } from '../../../shared/lib/format';
 import {
   Button,
   ButtonLink,
@@ -19,11 +19,11 @@ import {
   Notice,
   PageHeading,
   QueryError,
-} from '../../shared/ui/components';
-import { Icon } from '../../shared/ui/Icon';
+} from '../../../shared/ui/components';
+import { Icon } from '../../../shared/ui/Icon';
 import { OfferingVisual } from './OfferingVisual';
 import { requestFormSchema } from './validation';
-import ui from '../../shared/ui/ui.module.css';
+import ui from '../../../shared/ui/ui.module.css';
 import styles from './Offerings.module.css';
 
 function RequestForm({

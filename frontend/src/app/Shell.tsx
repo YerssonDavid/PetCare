@@ -7,19 +7,26 @@ import { ThemeToggle } from './ThemeToggle';
 import ui from '../shared/ui/ui.module.css';
 import styles from './Shell.module.css';
 
-const navigation = [
+const ownerNavigation = [
   { path: '/inicio', label: 'Inicio', icon: 'home' },
   { path: '/mascotas', label: 'Mis mascotas', icon: 'paw' },
   { path: '/servicios', label: 'Servicios y productos', icon: 'services' },
   { path: '/solicitudes', label: 'Mis solicitudes', icon: 'calendar' },
 ] as const;
+const providerNavigation = [
+  { path: '/proveedor', label: 'Inicio', icon: 'home' },
+  { path: '/proveedor/publicaciones', label: 'Mis publicaciones', icon: 'services' },
+  { path: '/proveedor/solicitudes', label: 'Solicitudes recibidas', icon: 'calendar' },
+  { path: '/proveedor/prestados', label: 'Servicios prestados', icon: 'check' },
+] as const;
 
-export function Shell({ ownerId }: { ownerId: string }) {
+export function Shell({ ownerId, role = 'USER' }: { ownerId: string; role?: 'USER' | 'PROVIDER' }) {
+  const navigation = role === 'PROVIDER' ? providerNavigation : ownerNavigation;
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const mobileToggle = useRef<HTMLButtonElement>(null);
   const location = useLocation();
-  const current = navigation.find((item) => location.pathname.startsWith(item.path));
+  const current = [...navigation].reverse().find((item) => location.pathname.startsWith(item.path));
   const collapseLabel = collapsed ? 'Expandir barra lateral' : 'Contraer barra lateral';
   return (
     <div className={styles.shell} data-collapsed={collapsed}>
@@ -57,6 +64,7 @@ export function Shell({ ownerId }: { ownerId: string }) {
               <NavLink
                 key={item.path}
                 to={item.path}
+                end={item.path === '/proveedor'}
                 aria-label={item.label}
                 title={item.label}
                 onClick={() => setMobileOpen(false)}
@@ -112,7 +120,7 @@ export function Shell({ ownerId }: { ownerId: string }) {
           <ThemeToggle />
           <span className={styles.account}>
             <Icon name="user" size={17} />
-            <span>Propietario</span>
+            <span>{role === 'PROVIDER' ? 'Proveedor' : 'Propietario'}</span>
           </span>
         </div>
       </header>

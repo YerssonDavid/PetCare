@@ -89,6 +89,22 @@ export const historySchema = z.object({
     z.object({ status: z.enum(statuses), reason: optionalText, changedAt: z.string() }),
   ),
 });
+export const receivedRequestSchema = z.object({
+  id: z.uuid(),
+  pet: petSchema,
+  ownerEmail: z.string(),
+  offeringName: z.string(),
+  offeringDescription: z.string(),
+  offeringType: z.enum(['SERVICIO', 'PRODUCTO']),
+  date: z.iso.date(),
+  startTime: z.string(),
+  endTime: z.string(),
+  price: z.number().nonnegative(),
+  status: z.enum(statuses),
+  purchaseType: z.enum(['RETIRO', 'ENTREGA']).nullish(),
+  rejectionReason: optionalText,
+  requestedAt: z.string(),
+});
 export type Pet = z.infer<typeof petSchema>;
 export type Offering = z.infer<typeof offeringSchema>;
 export type ServiceRequest = z.infer<typeof requestSchema>;
