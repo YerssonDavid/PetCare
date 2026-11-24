@@ -1,0 +1,1 @@
+{"root":["./vite.config.ts","./playwright.config.ts","./e2e/design.spec.ts","./e2e/owner.spec.ts","./e2e/provider.spec.ts"],"version":"5.9.3"}
