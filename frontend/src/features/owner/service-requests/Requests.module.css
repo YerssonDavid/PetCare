@@ -1,0 +1,83 @@
+.filters {
+  max-width: 250px;
+  margin-bottom: 1.5rem;
+}
+.requestCard {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.requestCard h2 {
+  margin: 0;
+}
+.requestCard p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.metadata {
+  display: grid;
+  gap: 0.7rem;
+  padding: 1rem 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.metadata span {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.requestFoot {
+  margin-top: auto;
+  display: grid;
+  gap: 1rem;
+}
+.history {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+.timeline {
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0 0 0.4rem;
+}
+.timeline li {
+  position: relative;
+  padding: 0 0 2rem 1.7rem;
+  border-left: 1px solid var(--border);
+}
+.timeline li:last-child {
+  border-left-color: transparent;
+  padding-bottom: 0;
+}
+.timeline li::before {
+  position: absolute;
+  left: -5px;
+  top: 0.4rem;
+  content: '';
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--primary);
+}
+.timeline time {
+  display: block;
+  margin: 0.7rem 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.timeline p {
+  color: var(--muted);
+  font-size: 0.85rem;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 950px) {
+  .history {
+    grid-template-columns: 1fr;
+  }
+}
